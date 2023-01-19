@@ -45,19 +45,19 @@ class Society(Model):
 # opinion on an issue if they agree on a different issue.
      
 class Voter(Agent):
-    def __init__(self, unique_id, model, opinions):
+    def __init__(self, unique_id, model, opinions, cluster):
         super().__init__(unique_id, model)
         self.opinions = opinions
+        self.cluster = cluster
         
     def step(self):
-        x = self
         # retreives x's neighbors and chooses one at random, y.
-        nbrs = list(x.model.g.neighbors(x.unique_id))
-        y = x.model.schedule.agents[np.random.choice(nbrs)]
+        nbrs = list(self.model.g.neighbors(self.unique_id))
+        neighbor = self.model.schedule.agents[np.random.choice(nbrs)]
         # calculates the absolute difference between x and y's opinions
         # on a randomly chosen issue, i1.
         i1 = np.random.choice(0, num_opinions-1)
-        diff = abs(x.opinions[i1] - y.opinions[i1])
+        diff = abs(self.opinions[i1] - neighbor.opinions[i1])
         # chooses another random issue, i2, that is different from i1
         i2 = np.random.choice(0, num_opinions-1)
         while i2 == i1:
@@ -65,7 +65,10 @@ class Voter(Agent):
         # if x and y agree on i1, then x's opinion on i2 will move
         # closer to y's opinion on i2
         if diff <= openness:
-            x.opinions[i2] = (x.opinions[i2] + y.opinions[i2])/2
+            self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
+            
+        
+
         
 
 
@@ -73,12 +76,17 @@ openness = 0.4
 num_opinions = 5
 N = 50
 edge_probability = 0.5
+num_steps = 150
+cluster_threshold = 0.05
 
 # generates a model society
 soc = Society(N, edge_probability)
 
 # completes 150 iterations of the simulation
 i = 0
-while i < 150:
+while i < num_steps:
     soc.step()
     i += 1
+    
+# computes the number of opinion clusters at this point in the simulation
+
