@@ -24,6 +24,17 @@ def gen_graph(N, p):
 # represents a model society using an erdos reyni graph. each node is a voter
 # with an array of opinions. each edge determines a voters neighbors.
 
+def get_bucket_avg(bucket):
+        sum = 0
+        bucket_avg = list()
+        for y in range(0, num_opinions):
+            for x in enumerate(bucket):
+                sum += bucket[x][y]
+            avg = sum/len(bucket)
+            bucket_avg[y] = avg
+        return bucket_avg
+    
+    
 class Society(Model):
     def __init__(self, N, p):
         super().__init__()
@@ -33,9 +44,9 @@ class Society(Model):
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
         for i in range(self.N):
-            newVoter = Voter(i, self, np.random.uniform(0.0, 1.0, num_opinions))
+            newVoter = Voter(i, self, list(np.random.uniform(0.0, 1.0, num_opinions)))
             self.schedule.add(newVoter)
-        #self.datacollector= DataCollector(model_reporters=)
+            # self.datacollector= DataCollector(model_reporters={"clusters":clusters})
         
         def step(self):
             self.schedule.step()
@@ -46,8 +57,7 @@ class Society(Model):
      
 class Voter(Agent):
     def __init__(self, unique_id, model, opinions, cluster):
-        super().__init__(unique_id, model)
-        self.opinions = opinions
+        super().__init__(unique_id, model, opinions)
         self.cluster = cluster
         
     def step(self):
@@ -67,17 +77,29 @@ class Voter(Agent):
         if diff <= openness:
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
             
-        
+        # if this is the first agent, make a new bucket for it
+        if len(buckets) == 0:
+            buckets.add(list(self.opinions))
+            
+        else:
+            for bucket in buckets:
+                avg_opinions = get_bucket_avg(bucket)
+                for i in enumerate(self.opinions):
+                    if abs(self.opinions[i] - avg_opinions[i]) > cluster_threshold:
+                           buckets.add(list(self.opinions))
+                           break
 
-        
-
-
+                    
+            
+            
 openness = 0.4
 num_opinions = 5
 N = 50
 edge_probability = 0.5
 num_steps = 150
 cluster_threshold = 0.05
+buckets = list()
+
 
 # generates a model society
 soc = Society(N, edge_probability)
