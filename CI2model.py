@@ -11,7 +11,7 @@ from mesa.datacollection import DataCollector
 import numpy as np
 import networkx as nx
 
-# generates an erdos reyni graph with N nodes and p edge probability.
+# generates an erdos renyi graph with N nodes and p edge probability.
 # if the graph is not connected, a new graph is generated until a 
 # connected one is obtained. 
 
@@ -21,7 +21,7 @@ def gen_graph(N, p):
         graph = nx.erdos_renyi_graph(N,p)
     return graph 
 
-# represents a model society using an erdos reyni graph. each node is a voter
+# represents a model society using an erdos renyi graph. each node is a voter
 # with an array of opinions. each edge determines a voters neighbors.
 
 class Society(Model):
