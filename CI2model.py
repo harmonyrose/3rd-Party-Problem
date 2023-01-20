@@ -37,8 +37,8 @@ class Society(Model):
             self.schedule.add(newVoter)
         #self.datacollector= DataCollector(model_reporters=)
         
-        def step(self):
-            self.schedule.step()
+    def step(self):
+        self.schedule.step()
     
 # represents a voter with an array of opinions.
 # at each step of the simulation, voter x may influence voter y's
