@@ -76,6 +76,7 @@ class Voter(Agent):
         # closer to y's opinion on i2
         if diff <= openness:
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
+            opinion_moved = True
             
         # if this is the first agent, make a new bucket for it
         if len(buckets) == 0:
@@ -83,12 +84,30 @@ class Voter(Agent):
             bucket.append(self)
             buckets.append(bucket)
             
+        # remove the agent from its current bucket
         else:
             for bucket in buckets:
+                for agent in bucket:
+                    if agent == self:
+                        bucket.remove(agent)
+                        # if the bucket is now empty, remove it
+                        if len(bucket) == 0:
+                            buckets.remove(bucket)
+            
+            # iterate through buckets again, comparing the agent's opinions to each
+            # bucket's average opinions. place agent in the appropriate bucket.
+            for bucket in buckets:
                 avg_opinions = get_bucket_avg(bucket)
+                belongs = True
                 for i in np.arange(num_opinions):
                     if abs(self.opinions[i] - avg_opinions[i]) > cluster_threshold:
-                           break
+                              belongs = False
+                if (belongs):
+                    bucket.append(self)
+                else:
+                    bucket = []
+                    bucket.append(self)
+                    buckets.append(bucket)
 
                     
             
@@ -99,7 +118,7 @@ N = 50
 edge_probability = 0.5
 num_steps = 150
 cluster_threshold = 0.05
-buckets = list()
+buckets = []
 
 
 # generates a model society
@@ -111,5 +130,7 @@ while i < num_steps:
     soc.step()
     i += 1
     
-# computes the number of opinion clusters at this point in the simulation
+# bucket stuff
+
+print(len(buckets))
 
