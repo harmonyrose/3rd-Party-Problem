@@ -25,12 +25,12 @@ def gen_graph(N, p):
 # with an array of opinions. each edge determines a voters neighbors.
 
 def get_bucket_avg(bucket):
-        sum = 0
         bucket_avg = []
-        for y in range(0, num_opinions):
+        for i in range(0, num_opinions):
+            sum = 0
             for agent in bucket:
-                sum += agent.opinions[y]
-            avg = sum/len(bucket)
+                sum += agent.opinions[i]
+            avg = sum/(len(bucket))
             bucket_avg.append(avg)
         return bucket_avg
     
@@ -44,7 +44,7 @@ class Society(Model):
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
         for i in range(self.N):
-            newVoter = Voter(i, self, list(np.random.uniform(0.0, 1.0, num_opinions)))
+            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)))
             self.schedule.add(newVoter)
             # self.datacollector= DataCollector(model_reporters={"clusters":clusters})
         
@@ -61,6 +61,7 @@ class Voter(Agent):
         self.opinions = opinions
         
     def step(self):
+        #print(self.opinions)
         # retreives x's neighbors and chooses one at random, y.
         nbrs = list(self.model.graph.neighbors(self.unique_id))
         neighbor = self.model.schedule.agents[np.random.choice(nbrs)]
@@ -77,6 +78,8 @@ class Voter(Agent):
         if diff <= openness:
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
             opinion_moved = True
+        else:
+            opinion_moved = False
             
         # if this is the first agent, make a new bucket for it
         if len(buckets) == 0:
@@ -84,32 +87,38 @@ class Voter(Agent):
             bucket.append(self)
             buckets.append(bucket)
             
-        # remove the agent from its current bucket
-        else:
+        # remove the agent from its current bucket and put it in the appropriate one if its opinion changed
+        if opinion_moved:
             for bucket in buckets:
-                for agent in bucket:
-                    if agent == self:
-                        bucket.remove(agent)
-                        # if the bucket is now empty, remove it
-                        if len(bucket) == 0:
-                            buckets.remove(bucket)
-            
-            # iterate through buckets again, comparing the agent's opinions to each
-            # bucket's average opinions. place agent in the appropriate bucket.
+                if self in bucket:
+                    bucket.remove(self)
+                    # if the bucket is now empty, remove it
+                    if len(bucket) == 0:
+                        buckets.remove(bucket)
+                        
             for bucket in buckets:
                 avg_opinions = get_bucket_avg(bucket)
                 belongs = True
                 for i in np.arange(num_opinions):
                     if abs(self.opinions[i] - avg_opinions[i]) > cluster_threshold:
-                              belongs = False
-                if (belongs):
+                        belongs = False
+                if belongs:
                     bucket.append(self)
-                else:
-                    bucket = []
-                    bucket.append(self)
-                    buckets.append(bucket)
+                    break
 
+
+        in_a_bucket = False
+        for bucket in buckets:
+            if self in bucket:
+                in_a_bucket = True
                     
+        if not in_a_bucket:
+            bucket = []
+            bucket.append(self)
+            buckets.append(bucket)
+                
+
+             
             
             
 openness = 0.4
@@ -128,9 +137,23 @@ soc = Society(N, edge_probability)
 i = 0
 while i < num_steps:
     soc.step()
+    print(len(buckets))
     i += 1
     
 # bucket stuff
+#for bucket in buckets:
+#    print(get_bucket_avg(bucket))
+#    for agent in bucket:
+#        print(agent.opinions)
 
-print(len(buckets))
+sum = 0
+for bucket in buckets:
+    #print(f"bucket average: {''}", get_bucket_avg(bucket))
+    for agent in bucket:
+        #print(f"agent opinions: {''}", agent.opinions)
+        sum += 1
+        
+print(sum)
+    
+
 
