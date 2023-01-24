@@ -26,12 +26,12 @@ def gen_graph(N, p):
 
 def get_bucket_avg(bucket):
         sum = 0
-        bucket_avg = list()
+        bucket_avg = []
         for y in range(0, num_opinions):
-            for x in enumerate(bucket):
-                sum += bucket[x][y]
+            for agent in bucket:
+                sum += agent.opinions[y]
             avg = sum/len(bucket)
-            bucket_avg[y] = avg
+            bucket_avg.append(avg)
         return bucket_avg
     
     
@@ -56,22 +56,22 @@ class Society(Model):
 # opinion on an issue if they agree on a different issue.
      
 class Voter(Agent):
-    def __init__(self, unique_id, model, opinions, cluster):
-        super().__init__(unique_id, model, opinions)
-        self.cluster = cluster
+    def __init__(self, unique_id, model, opinions):
+        super().__init__(unique_id, model)
+        self.opinions = opinions
         
     def step(self):
         # retreives x's neighbors and chooses one at random, y.
-        nbrs = list(self.model.g.neighbors(self.unique_id))
+        nbrs = list(self.model.graph.neighbors(self.unique_id))
         neighbor = self.model.schedule.agents[np.random.choice(nbrs)]
         # calculates the absolute difference between x and y's opinions
         # on a randomly chosen issue, i1.
-        i1 = np.random.choice(0, num_opinions-1)
+        i1 = np.random.choice(np.arange(num_opinions))
         diff = abs(self.opinions[i1] - neighbor.opinions[i1])
         # chooses another random issue, i2, that is different from i1
-        i2 = np.random.choice(0, num_opinions-1)
+        i2 = np.random.choice(np.arange(num_opinions))
         while i2 == i1:
-            i2 = np.random.choice(0, num_opinions-1)
+            i2 = np.random.choice(np.arange(num_opinions))
         # if x and y agree on i1, then x's opinion on i2 will move
         # closer to y's opinion on i2
         if diff <= openness:
@@ -79,14 +79,15 @@ class Voter(Agent):
             
         # if this is the first agent, make a new bucket for it
         if len(buckets) == 0:
-            buckets.add(list(self.opinions))
+            bucket = []
+            bucket.append(self)
+            buckets.append(bucket)
             
         else:
             for bucket in buckets:
                 avg_opinions = get_bucket_avg(bucket)
-                for i in enumerate(self.opinions):
+                for i in np.arange(num_opinions):
                     if abs(self.opinions[i] - avg_opinions[i]) > cluster_threshold:
-                           buckets.add(list(self.opinions))
                            break
 
                     
