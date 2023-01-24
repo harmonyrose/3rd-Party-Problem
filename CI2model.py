@@ -87,7 +87,7 @@ class Voter(Agent):
             bucket.append(self)
             buckets.append(bucket)
             
-        # remove the agent from its current bucket and put it in the appropriate one if its opinion changed
+        # remove the agent from its current bucket if its opinion changed
         if opinion_moved:
             for bucket in buckets:
                 if self in bucket:
@@ -96,6 +96,7 @@ class Voter(Agent):
                     if len(bucket) == 0:
                         buckets.remove(bucket)
                         
+            # place agent in appropriate bucket         
             for bucket in buckets:
                 avg_opinions = get_bucket_avg(bucket)
                 belongs = True
@@ -106,12 +107,11 @@ class Voter(Agent):
                     bucket.append(self)
                     break
 
-
+        #if the agent is bucketless, put it into its very own bucket
         in_a_bucket = False
         for bucket in buckets:
             if self in bucket:
                 in_a_bucket = True
-                    
         if not in_a_bucket:
             bucket = []
             bucket.append(self)
@@ -120,7 +120,7 @@ class Voter(Agent):
 
              
             
-            
+# hyperparameters (self-explanatory)            
 openness = 0.4
 num_opinions = 5
 N = 50
@@ -133,27 +133,11 @@ buckets = []
 # generates a model society
 soc = Society(N, edge_probability)
 
-# completes 150 iterations of the simulation
+# completes 150 iterations of the simulation, prints the number of buckets at
+# each iteration
 i = 0
 while i < num_steps:
     soc.step()
     print(len(buckets))
     i += 1
-    
-# bucket stuff
-#for bucket in buckets:
-#    print(get_bucket_avg(bucket))
-#    for agent in bucket:
-#        print(agent.opinions)
-
-sum = 0
-for bucket in buckets:
-    #print(f"bucket average: {''}", get_bucket_avg(bucket))
-    for agent in bucket:
-        #print(f"agent opinions: {''}", agent.opinions)
-        sum += 1
-        
-print(sum)
-    
-
 
