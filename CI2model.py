@@ -121,7 +121,7 @@ class Voter(Agent):
              
             
 # hyperparameters (self-explanatory)            
-openness = 0.4
+openness = 0.1
 num_opinions = 5
 N = 50
 edge_probability = 0.5
@@ -141,3 +141,5 @@ while i < num_steps:
     print(len(buckets))
     i += 1
 
+for bucket in buckets:
+    print(get_bucket_avg(bucket))
