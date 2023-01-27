@@ -9,6 +9,7 @@ from mesa import Model, Agent
 from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector
 import numpy as np
+import matplotlib.pyplot as plt
 import networkx as nx
 
 # generates an erdos renyi graph with N nodes and p edge probability.
@@ -136,8 +137,15 @@ soc = Society(N, edge_probability)
 # completes 150 iterations of the simulation, prints the number of buckets at
 # each iteration
 i = 0
+num_buckets = np.empty(num_steps, dtype=int)
 while i < num_steps:
     soc.step()
     print(len(buckets))
+    num_buckets[i] = len(buckets)
     i += 1
 
+plt.figure()
+plt.plot(num_buckets)
+plt.ylabel("Number of buckets")
+plt.xlabel("Simulation iteration")
+plt.show()
