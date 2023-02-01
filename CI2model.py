@@ -79,6 +79,15 @@ class Voter(Agent):
         if diff <= openness:
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
             opinion_moved = True
+        # if x and y strongly disagree on i1, then x's opinion on i2 will move
+        # further from y's opinion on i2
+        elif diff >= pushaway:
+            if self.opinions[i2] >= 0.5:
+                move_to = 1
+            else:
+                move_to = 0
+            self.opinions[i2] = (self.opinions[i2] + move_to)/2
+            opinion_moved = True
         else:
             opinion_moved = False
             
@@ -121,8 +130,14 @@ class Voter(Agent):
 
              
             
-# hyperparameters (self-explanatory)            
+# hyperparameters
+
+# if two agents are within this threshold on a chosen opinion, then
+# agent 1 "trusts" agent 2           
 openness = 0.1
+# if two agents are outside this threshold on a chosen opinion, then
+# agent 1 "distrusts" agent 2
+pushaway = 0.7
 num_opinions = 5
 N = 50
 edge_probability = 0.5
@@ -143,10 +158,6 @@ while i < num_steps:
     print(len(buckets))
     num_buckets[i] = len(buckets)
     i += 1
-
-
-for bucket in buckets:
-    print(get_bucket_avg(bucket))
 
 plt.figure()
 plt.plot(num_buckets)
