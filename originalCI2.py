@@ -48,7 +48,7 @@ def rational_vote(self, voter):
              if similarity > max_similarity:
                  max_similarity = similarity
                  closest_candidate = candidate
-         return closest_candidate
+         return closest_candidate, max_similarity
     
 class Society(Model):
     def __init__(self, N, p, num_candidates):
@@ -75,10 +75,12 @@ class Society(Model):
         
     def elect(self):
         vote_counts = {candidate: 0 for candidate in self.candidates}
+        cosine_similarities = []
         for voter in self.schedule.agents:
-            chosen_candidate = rational_vote(self, voter)
+            chosen_candidate = rational_vote(self, voter)[0]
+            cosine_similarities.append(rational_vote(self, voter)[1])
             vote_counts[chosen_candidate] += 1
-        return vote_counts
+        return vote_counts, cosine_similarities
           
         
 class Candidate(Agent):
@@ -177,12 +179,12 @@ pushaway = 0.7
 num_opinions = 5
 N = 50
 edge_probability = 0.5
-num_steps = 1500
+num_steps = 350
 cluster_threshold = 0.05
 buckets = []
 
-num_candidates = 5
-election_steps = 500
+num_candidates = 10
+election_steps = 50
 
 
 # generates a model society
@@ -192,11 +194,12 @@ soc = Society(N, edge_probability, num_candidates)
 # each iteration
 i = 0
 e = 0
-num_buckets = np.empty(num_steps, dtype=int)
-while i < num_steps:
+num_buckets = np.empty(num_steps + 1, dtype=int)
+while i <= num_steps:
     if i % election_steps == 0:
         e += 1
-        votes = soc.elect()
+        votes = soc.elect()[0]
+        cosine_similarities = soc.elect()[1]
         candidate_names = [candidate.opinions for candidate in votes.keys()]
         f_candidates = []
         for candidate in candidate_names:
@@ -213,9 +216,18 @@ while i < num_steps:
         plt.title(f"Election {e} Outcome")
         plt.xticks(rotation=45, ha="right")
         plt.show()
+        plt.hist(cosine_similarities, bins=50, edgecolor='black', range=(0,1), color='purple')  # Adjust the number of bins as needed
+        plt.xlabel('Cosine Similarity')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Voter Distances to Closest Candidate')
+        plt.show()
     soc.step()
     print(len(buckets))
     num_buckets[i] = len(buckets)
+    
+#    for i in len(buckets):
+#        plt.title("Bucket {i} Votes")
+        
     i += 1
 
 plt.figure()
