@@ -62,7 +62,7 @@ class Society(Model):
         self.candidates = []
         
         for i in range(self.N):
-            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)))
+            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)),[])
             self.schedule.add(newVoter)
             # self.datacollector= DataCollector(model_reporters={"clusters":clusters})
     
@@ -76,11 +76,17 @@ class Society(Model):
     def elect(self):
         vote_counts = {candidate: 0 for candidate in self.candidates}
         cosine_similarities = []
+        candidate_buckets = {candidate: [] for candidate in self.candidates}
+        bucket_count = 0
         for voter in self.schedule.agents:
             chosen_candidate = rational_vote(self, voter)[0]
             cosine_similarities.append(rational_vote(self, voter)[1])
             vote_counts[chosen_candidate] += 1
-        return vote_counts, cosine_similarities
+            if voter.bucket not in candidate_buckets[chosen_candidate]:
+                candidate_buckets[chosen_candidate].append(voter.bucket)
+                bucket_count += 1
+            
+        return vote_counts, cosine_similarities, candidate_buckets
           
         
 class Candidate(Agent):
@@ -94,9 +100,10 @@ class Candidate(Agent):
 # opinion on an issue if they agree on a different issue.
      
 class Voter(Agent):
-    def __init__(self, unique_id, model, opinions):
+    def __init__(self, unique_id, model, opinions, bucket):
         super().__init__(unique_id, model)
         self.opinions = opinions
+        self.bucket = bucket
         
     def step(self):
         #print(self.opinions)
@@ -133,6 +140,7 @@ class Voter(Agent):
             bucket = []
             bucket.append(self)
             buckets.append(bucket)
+            self.bucket = bucket
             
         # remove the agent from its current bucket if its opinion changed
         if opinion_moved:
@@ -152,6 +160,7 @@ class Voter(Agent):
                         belongs = False
                 if belongs:
                     bucket.append(self)
+                    self.bucket = bucket
                     break
 
         #if the agent is bucketless, put it into its very own bucket
@@ -162,6 +171,7 @@ class Voter(Agent):
         if not in_a_bucket:
             bucket = []
             bucket.append(self)
+            self.bucket = bucket
             buckets.append(bucket)
                 
 
@@ -200,6 +210,7 @@ while i <= num_steps:
         e += 1
         votes = soc.elect()[0]
         cosine_similarities = soc.elect()[1]
+        candidate_buckets = soc.elect()[2]
         candidate_names = [candidate.opinions for candidate in votes.keys()]
         f_candidates = []
         for candidate in candidate_names:
@@ -216,17 +227,28 @@ while i <= num_steps:
         plt.title(f"Election {e} Outcome")
         plt.xticks(rotation=45, ha="right")
         plt.show()
+        
         plt.hist(cosine_similarities, bins=50, edgecolor='black', range=(0,1), color='purple')  # Adjust the number of bins as needed
         plt.xlabel('Cosine Similarity')
         plt.ylabel('Frequency')
         plt.title('Histogram of Voter Distances to Closest Candidate')
         plt.show()
+    
+        bucket_counts = []
+        for candidate in candidate_buckets:
+            bucket_counts.append(len(candidate_buckets[candidate]))
+        plt.bar(formatted_strs, bucket_counts, color="green")
+        plt.xlabel("Candidates")
+        plt.ylabel("Number of Unique Buckets")
+        plt.title("Number of Different Buckets Voting for Each Candidate")
+        plt.xticks(rotation=45, ha="right")
+        plt.show()
+        
     soc.step()
     print(len(buckets))
     num_buckets[i] = len(buckets)
     
-#    for i in len(buckets):
-#        plt.title("Bucket {i} Votes")
+
         
     i += 1
 
