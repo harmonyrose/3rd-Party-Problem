@@ -245,11 +245,8 @@ while i <= num_steps:
         plt.show()
         
     soc.step()
-    print(len(buckets))
+    #print(len(buckets))
     num_buckets[i] = len(buckets)
-    
-
-        
     i += 1
 
 plt.figure()
@@ -257,3 +254,6 @@ plt.plot(num_buckets)
 plt.ylabel("Number of buckets")
 plt.xlabel("Simulation iteration")
 plt.show()
+
+for bucket in buckets:
+    print(len(bucket))
