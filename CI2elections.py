@@ -67,6 +67,7 @@ class Society(mesa.Model):
         self.candidates = []
         self.step_num = 0
         self.max_iter = max_iter
+
         
         for i in range(self.N):
             newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)),[])
@@ -80,11 +81,11 @@ class Society(mesa.Model):
     def step(self):
         self.step_num += 1
         self.schedule.step()
-        self.plot()
+#        self.plot()
         
     def elect(self):
         vote_counts = {candidate: 0 for candidate in self.candidates}
-        cosine_similarities = []
+        distances = []
         candidate_buckets = {candidate: [] for candidate in self.candidates}
         bucket_count = 0
         for voter in self.schedule.agents:
@@ -94,7 +95,7 @@ class Society(mesa.Model):
                 candidate_buckets[chosen_candidate].append(voter.bucket)
                 bucket_count += 1
             
-        return vote_counts, cosine_similarities, candidate_buckets
+        return vote_counts, distances, candidate_buckets
     
     def compute_SVD(self):
         X = np.r_[[ a.opinions for a in self.schedule.agents ]]
@@ -146,7 +147,6 @@ class Voter(mesa.Agent):
         super().__init__(unique_id, model)
         self.opinions = opinions
         self.bucket = bucket
-        
     def step(self):
         #print(self.opinions)
         # retreives x's neighbors and chooses one at random, y.
@@ -174,6 +174,7 @@ class Voter(mesa.Agent):
                 self.opinions[i2] += ((1-self.opinions[i2])/ 2)
 
             opinion_moved = True
+
         else:
             opinion_moved = False
             
@@ -204,7 +205,7 @@ class Voter(mesa.Agent):
                     bucket.append(self)
                     self.bucket = bucket
                     break
-
+            
         #if the agent is bucketless, put it into its very own bucket
         in_a_bucket = False
         for bucket in buckets:
@@ -227,13 +228,14 @@ openness = 0.1
 # if two agents are outside this threshold on a chosen opinion, then
 # agent 1 "distrusts" agent 2
 pushaway = 0.6
-
 num_opinions = 3
 N = 20
 edge_probability = 0.5
-max_iter = 50
+max_iter = 400
 cluster_threshold = 0.05
 buckets = []
+termination = 10
+
 
 num_candidates = 5
 election_steps = 50
@@ -245,7 +247,6 @@ election_steps = 50
 # completes 150 iterations of the simulation, prints the number of buckets at
 # each iteration
 
-    
 def is_non_trivial(bucket):
     if len(bucket) > 2:
         return True
@@ -253,27 +254,38 @@ def is_non_trivial(bucket):
         return False
     
 j = 0
-buckets_hist = []
-
+e = 0
+votes_overtime = []
 while (j < 1):
     buckets = []
     soc = Society(N, edge_probability, max_iter, num_candidates)
     i = 0
-    non_triv_buckets = []
     while (i < max_iter):
         soc.step()
+        if i % election_steps == 0:
+            e += 1
+            votes = soc.elect()[0]
+            candidate_names = [candidate.opinions for candidate in votes.keys()]
+                
+            f_candidates = []
+            for candidate in candidate_names:
+                f_candidate = ["{:.1f}".format(opinion) for opinion in candidate]
+                f_candidates.append(f_candidate)
+            formatted_strs = []
+            for candidate in f_candidates:
+                formatted_str = ", ".join(candidate) 
+                formatted_strs.append(formatted_str)
+            vote_values = list(votes.values())
+            votes_overtime.append(vote_values)
         i += 1
-    for bucket in buckets:
-        if is_non_trivial(bucket):
-            non_triv_buckets.append(bucket)
-    buckets_hist.append(len(non_triv_buckets))
-#    soc.make_animation()
+    print(votes_overtime)
+    for candidate in soc.candidates:
+        plt.plot(votes_overtime)
+    plt.xlabel("Time")
+    plt.ylabel("Vote Counts")
+    plt.title("Election Results Over Time")
+    plt.legend()
+    plt.show()
     j += 1
-    
 
-plt.hist(buckets_hist, color='b', edgecolor='black')
-plt.xlabel('Number of Non-trivial Buckets at End of Simulation')
-plt.ylabel('Frequency')
-plt.title('Histogram')
-plt.xticks(range(min(buckets_hist), max(buckets_hist)+1))
-plt.show()
+    
