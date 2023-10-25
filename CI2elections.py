@@ -14,6 +14,7 @@ import mesa
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import math
 import sys
 import glob
@@ -21,6 +22,8 @@ import os
 import subprocess
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
+from mesa.batchrunner import batch_run
+from mesa.datacollection import DataCollector
 import imageio
 
 # generates an erdos renyi graph with N nodes and p edge probability.
@@ -56,11 +59,12 @@ def rational_vote(self, voter):
          return closest_candidate
     
 class Society(mesa.Model):
-    def __init__(self, N, p, max_iter, num_candidates):
+    def __init__(self, N, p, max_iter, num_candidates, cluster_threshold):
         super().__init__()
         self.N = N
         self.p = p
         self.num_candidates = num_candidates
+        self.cluster_threshold = cluster_threshold
         self.graph = gen_graph(N, p)
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
@@ -77,25 +81,29 @@ class Society(mesa.Model):
         for i in range(self.num_candidates):
             newCandidate = Candidate(i, self, list(np.random.uniform(0,1,num_opinions)))
             self.candidates.append(newCandidate)
+
+        self.datacollector = DataCollector(
+            agent_reporters={},
+            model_reporters={"election_results": Society.elect})
             
     def step(self):
         self.step_num += 1
+        self.datacollector.collect(self)
         self.schedule.step()
-#        self.plot()
         
     def elect(self):
-        vote_counts = {candidate: 0 for candidate in self.candidates}
+        vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         distances = []
-        candidate_buckets = {candidate: [] for candidate in self.candidates}
+        candidate_buckets = {candidate.unique_id:
+                                        [] for candidate in self.candidates}
         bucket_count = 0
         for voter in self.schedule.agents:
             chosen_candidate = rational_vote(self, voter)
-            vote_counts[chosen_candidate] += 1
-            if voter.bucket not in candidate_buckets[chosen_candidate]:
-                candidate_buckets[chosen_candidate].append(voter.bucket)
+            vote_counts[chosen_candidate.unique_id] += 1
+            if voter.bucket not in candidate_buckets[chosen_candidate.unique_id]:
+                candidate_buckets[chosen_candidate.unique_id].append(voter.bucket)
                 bucket_count += 1
-            
-        return vote_counts, distances, candidate_buckets
+        return list(vote_counts.values()) #, distances, candidate_buckets
     
     def compute_SVD(self):
         X = np.r_[[ a.opinions for a in self.schedule.agents ]]
@@ -199,7 +207,7 @@ class Voter(mesa.Agent):
                 avg_opinions = get_bucket_avg(bucket)
                 belongs = True
                 for i in np.arange(num_opinions):
-                    if abs(self.opinions[i] - avg_opinions[i]) > cluster_threshold:
+                    if abs(self.opinions[i] - avg_opinions[i]) > self.model.cluster_threshold:
                         belongs = False
                 if belongs:
                     bucket.append(self)
@@ -237,7 +245,7 @@ buckets = []
 termination = 10
 
 
-num_candidates = 5
+num_candidates = 10
 election_steps = 50
 
 
@@ -253,39 +261,53 @@ def is_non_trivial(bucket):
     else:
         return False
     
-j = 0
-e = 0
-votes_overtime = []
-while (j < 1):
-    buckets = []
-    soc = Society(N, edge_probability, max_iter, num_candidates)
-    i = 0
-    while (i < max_iter):
-        soc.step()
-        if i % election_steps == 0:
-            e += 1
-            votes = soc.elect()[0]
-            candidate_names = [candidate.opinions for candidate in votes.keys()]
-                
-            f_candidates = []
-            for candidate in candidate_names:
-                f_candidate = ["{:.1f}".format(opinion) for opinion in candidate]
-                f_candidates.append(f_candidate)
-            formatted_strs = []
-            for candidate in f_candidates:
-                formatted_str = ", ".join(candidate) 
-                formatted_strs.append(formatted_str)
-            vote_values = list(votes.values())
-            votes_overtime.append(vote_values)
-        i += 1
-    print(votes_overtime)
-    for candidate in soc.candidates:
-        plt.plot(votes_overtime)
-    plt.xlabel("Time")
-    plt.ylabel("Vote Counts")
-    plt.title("Election Results Over Time")
-    plt.legend()
-    plt.show()
-    j += 1
 
-    
+
+if __name__ == "__main__":
+
+    if len(sys.argv) <= 1:
+        sys.exit("Usage: CI2elections.py numSims.")
+
+    num_sims = int(sys.argv[1])
+
+    params = {
+        "N": N,
+        "p": edge_probability,
+        "cluster_threshold": cluster_threshold,
+        "num_candidates": num_candidates,
+        "max_iter": max_iter  # only needed for plot caption
+    }
+
+    if num_sims == 1:
+        # Single run.
+        s = Society(params["N"], params["p"], params["cluster_threshold"],
+            params["num_candidates"], params["max_iter"])
+        for i in range(max_iter):
+            s.step()
+        single_results = s.datacollector.get_model_vars_dataframe()
+
+        # You now have single_results in your environment. For example, you
+        # could do:
+        # >>> single_results.iloc[0].election_results
+        # to see the results at time=0.
+
+    else:
+
+        batch_results = batch_run(Society,
+            parameters=params,
+            iterations=num_sims,
+            max_steps=max_iter,
+            number_processes=None,   # make this 1 to use only one CPU
+            data_collection_period=election_steps
+            )
+
+        batch_results = pd.DataFrame(batch_results)
+
+        # You now have batch_results in your environment. For example, you
+        # could do:
+        # >>> batch_results.iloc[0].election_results
+        # to see the results of the first simulation in the suite, at time=0.
+        # (See other columns in batch_results to explain what each line
+        # signifies.)
+
+
