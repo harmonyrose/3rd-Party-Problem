@@ -98,11 +98,12 @@ class Society(mesa.Model):
                                         [] for candidate in self.candidates}
         bucket_count = 0
         for voter in self.schedule.agents:
-            chosen_candidate = rational_vote(self, voter)
-            vote_counts[chosen_candidate.unique_id] += 1
-            if voter.bucket not in candidate_buckets[chosen_candidate.unique_id]:
-                candidate_buckets[chosen_candidate.unique_id].append(voter.bucket)
-                bucket_count += 1
+            if voter.should_vote():
+                chosen_candidate = rational_vote(self, voter)
+                vote_counts[chosen_candidate.unique_id] += 1
+                if voter.bucket not in candidate_buckets[chosen_candidate.unique_id]:
+                    candidate_buckets[chosen_candidate.unique_id].append(voter.bucket)
+                    bucket_count += 1
         return list(vote_counts.values()) #, distances, candidate_buckets
     
     def compute_SVD(self):
@@ -224,7 +225,18 @@ class Voter(mesa.Agent):
             bucket.append(self)
             self.bucket = bucket
             buckets.append(bucket)
-                
+            
+    def should_vote(self):
+            min_distance = 10
+            for candidate in self.model.candidates:
+                distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(self.opinions, candidate.opinions)))
+                if distance < min_distance:
+                    min_distance = distance
+            if min_distance > no_vote_threshold:
+                return False
+            else:
+                return True
+    
 
              
             
@@ -243,7 +255,7 @@ max_iter = 400
 cluster_threshold = 0.05
 buckets = []
 termination = 10
-
+no_vote_threshold = pushaway
 
 num_candidates = 10
 election_steps = 50
