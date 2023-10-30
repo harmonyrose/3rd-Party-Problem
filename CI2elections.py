@@ -85,7 +85,8 @@ class Society(mesa.Model):
             
     def step(self):
         self.step_num += 1
-        self.datacollector.collect(self)
+        if self.step_num % 50 == 0:
+            self.datacollector.collect(self)
         self.schedule.step()
         
     def elect(self):
@@ -154,6 +155,7 @@ class Society(mesa.Model):
                 for key in vote_counts:
                     if all(0 <= value <= 1 for value in key):
                         max_key = key
+                        max_key_list = list(max_key)
                         break
             # if the candidate got more than 0 votes, retrieve the key (opinions) corresponding
             # to the max vote count. if any of the opinions are outside the 0-1 range, clip
@@ -169,7 +171,7 @@ class Society(mesa.Model):
                         max_key_list[i] = 1.0
             
             # store the optimal opinions and set the candidate's opinions back to
-            # what they were originally for now
+            # what they were originally
             clipped_max_key = tuple(max_key_list)
             print(f"candidate {candidate.unique_id}: {clipped_max_key} {vote_counts[max_key]}")
             clipped_max_key = list(clipped_max_key)
