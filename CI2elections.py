@@ -17,14 +17,11 @@ import numpy as np
 import pandas as pd
 import math
 import sys
-import glob
-import os
-import subprocess
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
 from mesa.batchrunner import batch_run
 from mesa.datacollection import DataCollector
-import imageio
+from itertools import product
 
 # generates an erdos renyi graph with N nodes and p edge probability.
 # if the graph is not connected, a new graph is generated until a 
@@ -104,8 +101,82 @@ class Society(mesa.Model):
                 if voter.bucket not in candidate_buckets[chosen_candidate.unique_id]:
                     candidate_buckets[chosen_candidate.unique_id].append(voter.bucket)
                     bucket_count += 1
+        # drift after election
+        new_opinions = self.drift()
+        for candidate in self.candidates:
+            candidate.opinions = list(new_opinions[candidate.unique_id])
+            #print(candidate.opinions)
         return list(vote_counts.values()) #, distances, candidate_buckets
     
+    # candidates drift towards the opinions that will get them the most votes
+    def drift(self):
+        optimal_opinions = {candidate.unique_id: [] for candidate in self.candidates}
+        for candidate in self.candidates:
+            # create an array of offsets within ±0.1
+            
+            offset_range = np.linspace(-0.1, 0.1, 5)
+            
+            # generate all possible combinations of offsets
+            offset_combinations = product(offset_range, repeat=len(candidate.opinions))
+            
+            # initialize an empty list to store the neighboring arrays
+            neighboring_arrays = []
+
+            for offsets in offset_combinations:
+                # calculate the neighboring array by adding offsets to the input_array
+                neighbor_array = np.array(candidate.opinions) + np.array(offsets)
+                neighboring_arrays.append(neighbor_array)
+                
+            # store all neighboring arrays in a dictionary
+            neighboring_tuples = [tuple(arr) for arr in neighboring_arrays]
+            vote_counts = {t: 0 for t in neighboring_tuples}
+            
+            # store the candidate's original opinions
+            original_opinions = candidate.opinions
+            for t in neighboring_tuples:
+                candidate.opinions = t
+                for voter in self.schedule.agents:
+                    voting_agent = voter.should_vote()
+                    # if this is a non-voting agent, ensure it will still be non-voting
+                    # with the candidate's new opinions
+                    if voting_agent == False:
+                        distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(voter.opinions, candidate.opinions)))
+                        if distance < no_vote_threshold:
+                            voting_agent = True
+                    # all voting agents vote 
+                    if voting_agent:
+                        chosen_candidate = rational_vote(self, voter)
+                        if chosen_candidate == candidate:
+                            vote_counts[t] += 1
+                            
+            # if the candidate got 0 votes, pick a random opinion array, given it is between 0-1
+            if max(vote_counts.values()) == 0:
+                for key in vote_counts:
+                    if all(0 <= value <= 1 for value in key):
+                        max_key = key
+                        break
+            # if the candidate got more than 0 votes, retrieve the key (opinions) corresponding
+            # to the max vote count. if any of the opinions are outside the 0-1 range, clip
+            # them back to 0 or 1
+            else:    
+                max_key = max(vote_counts, key=lambda k: vote_counts[k])
+                max_key_list = list(max_key)
+
+                for i in range(len(max_key_list)):
+                    if max_key_list[i] < 0:
+                        max_key_list[i] = 0.0
+                    elif max_key_list[i] > 1:
+                        max_key_list[i] = 1.0
+            
+            # store the optimal opinions and set the candidate's opinions back to
+            # what they were originally for now
+            clipped_max_key = tuple(max_key_list)
+            print(f"candidate {candidate.unique_id}: {clipped_max_key} {vote_counts[max_key]}")
+            clipped_max_key = list(clipped_max_key)
+            optimal_opinions[candidate.unique_id] = clipped_max_key
+            candidate.opinions = original_opinions
+        return optimal_opinions
+
     def compute_SVD(self):
         X = np.r_[[ a.opinions for a in self.schedule.agents ]]
         # Center & standardize column means.
@@ -227,7 +298,7 @@ class Voter(mesa.Agent):
             buckets.append(bucket)
             
     def should_vote(self):
-            min_distance = 10
+            min_distance = 100
             for candidate in self.model.candidates:
                 distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(self.opinions, candidate.opinions)))
                 if distance < min_distance:
@@ -257,7 +328,7 @@ buckets = []
 termination = 10
 no_vote_threshold = pushaway
 
-num_candidates = 10
+num_candidates = 3
 election_steps = 50
 
 
