@@ -102,6 +102,8 @@ class Society(mesa.Model):
                 if voter.bucket not in candidate_buckets[chosen_candidate.unique_id]:
                     candidate_buckets[chosen_candidate.unique_id].append(voter.bucket)
                     bucket_count += 1
+        for candidate in self.candidates:
+            print(f"candidate {candidate.unique_id}: {vote_counts[candidate.unique_id]}")
         # drift after election
         new_opinions = self.drift()
         for candidate in self.candidates:
@@ -173,7 +175,7 @@ class Society(mesa.Model):
             # store the optimal opinions and set the candidate's opinions back to
             # what they were originally
             clipped_max_key = tuple(max_key_list)
-            print(f"candidate {candidate.unique_id}: {clipped_max_key} {vote_counts[max_key]}")
+            print(f"candidate {candidate.unique_id}: {clipped_max_key}") #" {vote_counts[max_key]}")
             clipped_max_key = list(clipped_max_key)
             optimal_opinions[candidate.unique_id] = clipped_max_key
             candidate.opinions = original_opinions
