@@ -56,7 +56,7 @@ def rational_vote(self, voter):
          return closest_candidate
     
 class Society(mesa.Model):
-    def __init__(self, N, p, max_iter, num_candidates, cluster_threshold):
+    def __init__(self, N, p, max_iter, num_candidates, cluster_threshold, party_centroids):
         super().__init__()
         self.N = N
         self.p = p
@@ -68,16 +68,26 @@ class Society(mesa.Model):
         self.candidates = []
         self.step_num = 0
         self.max_iter = max_iter
+        self.party_centroids = {}
 
-        
-        for i in range(self.N):
-            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)),[])
-            self.schedule.add(newVoter)
-            # self.datacollector= DataCollector(model_reporters={"clusters":clusters})
     
         for i in range(self.num_candidates):
-            newCandidate = Candidate(i, self, list(np.random.uniform(0,1,num_opinions)))
+            newCandidate = Candidate(i, self, list(np.random.uniform(0,1,num_opinions)), i)
+            self.party_centroids[i] = newCandidate.opinions
             self.candidates.append(newCandidate)
+            
+        for i in range(self.N):
+            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)),[], 0)
+            min_distance = 100
+            closest_party = -1
+            for party in self.party_centroids:
+                distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(newVoter.opinions, self.party_centroids[party])))
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_party = party
+            newVoter.party = closest_party
+            self.schedule.add(newVoter)
+            # self.datacollector= DataCollector(model_reporters={"clusters":clusters})
 
         self.datacollector = DataCollector(
             agent_reporters={},
@@ -88,6 +98,20 @@ class Society(mesa.Model):
         if self.step_num % 50 == 0:
             self.datacollector.collect(self)
         self.schedule.step()
+    
+    def recompute_centroids(self):
+        for party in self.party_centroids:
+            new_centroid = [0] * num_opinions
+            party_members = 0
+            for voter in self.schedule.agents:
+                if voter.party == party:
+                    party_members += 1
+                    for i in range(len(voter.opinions)):
+                        new_centroid[i] += voter.opinions[i]
+            for i in range(len(new_centroid)):
+                new_centroid[i] /= party_members
+                i +=1
+            self.party_centroids[party] = new_centroid
         
     def elect(self):
         vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
@@ -105,6 +129,7 @@ class Society(mesa.Model):
         for candidate in self.candidates:
             print(f"candidate {candidate.unique_id}: {vote_counts[candidate.unique_id]}")
         # drift after election
+        self.recompute_centroids()
         new_opinions = self.drift()
         for candidate in self.candidates:
             candidate.opinions = list(new_opinions[candidate.unique_id])
@@ -117,7 +142,7 @@ class Society(mesa.Model):
         for candidate in self.candidates:
             # create an array of offsets within ±0.1
             
-            offset_range = np.linspace(-0.1, 0.1, 5)
+            offset_range = np.linspace(-0.2, 0.2, 9)
             
             # generate all possible combinations of offsets
             offset_combinations = product(offset_range, repeat=len(candidate.opinions))
@@ -125,9 +150,10 @@ class Society(mesa.Model):
             # initialize an empty list to store the neighboring arrays
             neighboring_arrays = []
 
+            
             for offsets in offset_combinations:
-                # calculate the neighboring array by adding offsets to the input_array
-                neighbor_array = np.array(candidate.opinions) + np.array(offsets)
+                # calculate neighboring arrays based on party centroid
+                neighbor_array = np.array(self.party_centroids[candidate.party]) + np.array(offsets)
                 neighboring_arrays.append(neighbor_array)
                 
             # store all neighboring arrays in a dictionary
@@ -217,20 +243,21 @@ class Society(mesa.Model):
         
               
 class Candidate(mesa.Agent):
-    def __init__(self, unique_id, model, opinions):
+    def __init__(self, unique_id, model, opinions, party):
         super().__init__(unique_id, model)
         self.opinions = opinions
-        
+        self.party = party
         
 # represents a voter with an array of opinions.
 # at each step of the simulation, voter x may influence voter y's
 # opinion on an issue if they agree on a different issue.
      
 class Voter(mesa.Agent):
-    def __init__(self, unique_id, model, opinions, bucket):
+    def __init__(self, unique_id, model, opinions, bucket, party):
         super().__init__(unique_id, model)
         self.opinions = opinions
         self.bucket = bucket
+        self.party = party
     def step(self):
         #print(self.opinions)
         # retreives x's neighbors and chooses one at random, y.
@@ -331,6 +358,7 @@ cluster_threshold = 0.05
 buckets = []
 termination = 10
 no_vote_threshold = pushaway
+party_centroids = {}
 
 num_candidates = 3
 election_steps = 50
@@ -362,13 +390,14 @@ if __name__ == "__main__":
         "p": edge_probability,
         "cluster_threshold": cluster_threshold,
         "num_candidates": num_candidates,
-        "max_iter": max_iter  # only needed for plot caption
+        "max_iter": max_iter,  # only needed for plot caption
+        "party_centroids": party_centroids
     }
 
     if num_sims == 1:
         # Single run.
         s = Society(params["N"], params["p"], params["cluster_threshold"],
-            params["num_candidates"], params["max_iter"])
+            params["num_candidates"], params["max_iter"], params["party_centroids"])
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
