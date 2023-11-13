@@ -110,7 +110,6 @@ class Society(mesa.Model):
                         new_centroid[i] += voter.opinions[i]
             for i in range(len(new_centroid)):
                 new_centroid[i] /= party_members
-                i +=1
             self.party_centroids[party] = new_centroid
         
     def elect(self):
