@@ -56,6 +56,12 @@ def rational_vote(self, voter):
              closest_candidate = candidate
      return closest_candidate
 
+# Returns the candidate number that belongs to the same party as the voter
+def party_vote(self, voter):
+    for candidate in self.candidates:
+        if voter.party == candidate.party:
+            return candidate
+    
 # An agent-based model of a society with N voters and num_candidates political
 # candidates for office. Other constructor parameters:
 # p - probability of social connection between any two voters
@@ -379,33 +385,37 @@ class Voter(mesa.Agent):
 
 
 
-# hyperparameters
+# Parameters
 
-# if two agents are within this threshold on a chosen opinion, then
-# agent 1 "trusts" agent 2
+# Threshold that determines when agents are close enough on one issue to
+# assimilate on a second issue
 openness = 0.1
-# if two agents are outside this threshold on a chosen opinion, then
-# agent 1 "distrusts" agent 2
+# Threshold that determines when ages are far away enough on one issue to
+# push away from each other on a second issue
 pushaway = 0.6
+# The number of opinions held by each voter and candidate
 num_opinions = 3
+# Number of nodes in the ER graph
 N = 20
+# Edge probability of the ER graph
 edge_probability = 0.5
+# Max number of the steps the simulation will run before terminating
 max_iter = 400
+# Threshold for how close voters' opinions need to be in order to be placed in
+# the same bucket
 cluster_threshold = 0.05
 buckets = []
-termination = 10
+# Threshold that determines how far away a voter needs to be from all
+# candidates to not vote 
 no_vote_threshold = pushaway
-
+# Number of candidates
 num_candidates = 3
+# Steps between each election
 election_steps = 50
 
 
-# generates a model society
-
-
-# completes 150 iterations of the simulation, prints the number of buckets at
-# each iteration
-
+# Returns true if a bucket is "non-trivial", in that it has 3 or more agents
+# This number may need adjusting based on the total number of voters
 def is_non_trivial(bucket):
     if len(bucket) > 2:
         return True
