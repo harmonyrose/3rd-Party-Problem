@@ -66,12 +66,15 @@ def rational_vote(self, voter):
 # no_vote_threshold -- if an agent is no closer than this value to any
 #   candidate in opinion space, it will sit out the election
 class Society(mesa.Model):
-    def __init__(self, N, p, max_iter, num_candidates, cluster_threshold):
+    def __init__(self, N, p, max_iter, num_candidates, cluster_threshold,
+        no_vote_threshold):
+
         super().__init__()
         self.N = N
         self.p = p
         self.num_candidates = num_candidates
         self.cluster_threshold = cluster_threshold
+        self.no_vote_threshold = no_vote_threshold
         self.graph = gen_graph(N, p)
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
@@ -424,12 +427,14 @@ if __name__ == "__main__":
         "cluster_threshold": cluster_threshold,
         "num_candidates": num_candidates,
         "max_iter": max_iter,  # only needed for plot caption
+        "no_vote_threshold": no_vote_threshold,
     }
 
     if num_sims == 1:
         # Single run.
         s = Society(params["N"], params["p"], params["cluster_threshold"],
-            params["num_candidates"], params["max_iter"])
+            params["num_candidates"], params["max_iter"],
+            params["no_vote_threshold"])
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
