@@ -434,9 +434,11 @@ if __name__ == "__main__":
         sys.exit("Usage: CI2elections.py numSims [animationFilename].")
 
     num_sims = int(sys.argv[1])
-    if num_sims == 1 and len(sys.argv) == 2:
+    if num_sims == 1 and len(sys.argv) == 3:
         do_plot = True
         anim_filename = sys.argv[1]
+    else:
+        do_plot = False
 
     params = {
         "N": N,
