@@ -64,10 +64,10 @@ def party_vote(self, voter):
             return candidate
 
 # Function used at initialization to determine all voters' voting algorithms
-# based on percent_rational. Sets self.voting_algorithm to either "rational"
+# based on frac_rational. Sets self.voting_algorithm to either "rational"
 # or "party" for every voter.
 def determine_voting_algorithms(self):
-    num_rational = int(percent_rational * N)
+    num_rational = int(frac_rational * N)
     rational_voters = random.sample(self.schedule.agents, num_rational)
     for voter in self.schedule.agents:
         if voter in rational_voters:
@@ -86,9 +86,12 @@ def determine_voting_algorithms(self):
 #   average opinion of the other agents in the bucket, on every issue
 # no_vote_threshold -- if an agent is no closer than this value to any
 #   candidate in opinion space, it will sit out the election
+# frac_rational -- the proportion of voters who will vote rationally (as
+#   opposed to by party)
+# election_steps -- hold an election every this number of steps
 class Society(mesa.Model):
     def __init__(self, N, p, cluster_threshold, num_candidates, max_iter,
-        no_vote_threshold, percent_rational, do_plot=False):
+        no_vote_threshold, frac_rational, election_steps, do_plot=False):
 
         super().__init__()
         self.N = N
@@ -103,7 +106,8 @@ class Society(mesa.Model):
         self.step_num = 0
         self.max_iter = max_iter
         self.party_centroids = {}
-        self.percent_rational = percent_rational
+        self.frac_rational = frac_rational
+        self.election_steps = election_steps
         self.do_plot = do_plot
 
         # Create new random candidates, one for each party, and initialize each
@@ -136,7 +140,7 @@ class Society(mesa.Model):
     def step(self):
         self.step_num += 1
         # TODO Issue #12
-        if self.step_num % 50 == 0:
+        if self.step_num % self.election_steps == 0:
             self.datacollector.collect(self)
         self.schedule.step()
         if self.do_plot:
@@ -416,7 +420,7 @@ num_candidates = 3
 # Steps between each election
 election_steps = 50
 # Proportion of voters who will vote rationally
-percent_rational = 0.5
+frac_rational = 0.75
 
 # Returns true if a bucket is "non-trivial", in that it has 3 or more agents
 # This number may need adjusting based on the total number of voters
@@ -447,15 +451,15 @@ if __name__ == "__main__":
         "num_candidates": num_candidates,
         "max_iter": max_iter,  # only needed for plot caption
         "no_vote_threshold": no_vote_threshold,
-        "percent_rational": percent_rational
+        "frac_rational": frac_rational
     }
 
     if num_sims == 1:
         # Single run.
         s = Society(params["N"], params["p"], params["cluster_threshold"],
             params["num_candidates"], params["max_iter"],
-            params["no_vote_threshold"], params["percent_rational"],
-            do_plot)
+            params["no_vote_threshold"], params["frac_rational"],
+            election_steps, do_plot)
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
