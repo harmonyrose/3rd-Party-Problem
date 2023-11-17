@@ -134,7 +134,8 @@ class Society(mesa.Model):
         determine_voting_algorithms(self)
         self.datacollector = DataCollector(
             agent_reporters={},
-            model_reporters={"election_results": Society.elect})
+            model_reporters={"rational_results": Society.rational_elect,
+                             "election_results": Society.elect})
 
     # Make each agent run, and hold an election if it's time to.
     def step(self):
@@ -172,7 +173,6 @@ class Society(mesa.Model):
     # that would have been achieved had every voter voted rationally.
     def elect(self):
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
-        rational_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         # Have all agents vote based on their voting algorithm and store the
         # vote counts in real_vote_counts
         for voter in self.schedule.agents:
@@ -182,17 +182,20 @@ class Society(mesa.Model):
                 chosen_candidate = party_vote(self, voter)
             real_vote_counts[chosen_candidate.unique_id] += 1
                 
-        # Have all agents vote rationally and store the vote counts in rational_vote_counts
-        for voter in self.schedule.agents:
-            chosen_candidate = rational_vote(self, voter)
-            rational_vote_counts[chosen_candidate.unique_id] += 1
-
         # drift after election
         self.recompute_centroids()
         new_opinions = self.drift()
         for candidate in self.candidates:
             candidate.opinions = list(new_opinions[candidate.unique_id])
-        return list(real_vote_counts.values()), list(rational_vote_counts.values())
+        return list(real_vote_counts.values())
+
+    def rational_elect(self):
+        rational_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
+        # Have all agents vote rationally and store the vote counts in rational_vote_counts
+        for voter in self.schedule.agents:
+            chosen_candidate = rational_vote(self, voter)
+            rational_vote_counts[chosen_candidate.unique_id] += 1
+        return list(rational_vote_counts.values())
 
     # candidates drift towards the opinions that will get them the most votes
     def drift(self):
@@ -471,6 +474,25 @@ if __name__ == "__main__":
         # could do:
         # >>> single_results.iloc[0].election_results
         # to see the results at time=0.
+
+        er = single_results['election_results']
+        rr = single_results['rational_results']
+        # Ugliest code ever? Candidate...
+        er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
+        rr = pd.DataFrame.from_dict(dict(zip(rr.index,rr.values))).transpose()
+        fig = plt.figure()
+        axer = fig.add_subplot(211)
+        axrr = fig.add_subplot(212)
+        axer.title.set_text("Actual election results")
+        axrr.title.set_text("Hypothetical (rational) results")
+        axer.plot(er.index,er)
+        axrr.plot(rr.index,rr)
+        axer.set_ylim((0,er.max(axis=None)*1.1))
+        axrr.set_ylim((0,er.max(axis=None)*1.1))
+        axrr.set_xlabel(
+            f"Election number (one per {election_steps} iterations)")
+        plt.tight_layout()
+        plt.savefig(f"election_outcomes.png")
 
     else:
 
