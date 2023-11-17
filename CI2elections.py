@@ -91,7 +91,7 @@ def determine_voting_algorithms(self):
 # election_steps -- hold an election every this number of steps
 class Society(mesa.Model):
     def __init__(self, N, p, cluster_threshold, num_candidates, max_iter,
-        no_vote_threshold, frac_rational, election_steps, do_plot=False):
+        no_vote_threshold, frac_rational, election_steps, do_anim=False):
 
         super().__init__()
         self.N = N
@@ -108,7 +108,7 @@ class Society(mesa.Model):
         self.party_centroids = {}
         self.frac_rational = frac_rational
         self.election_steps = election_steps
-        self.do_plot = do_plot
+        self.do_anim = do_anim
 
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
@@ -143,7 +143,7 @@ class Society(mesa.Model):
         if self.step_num % self.election_steps == 0:
             self.datacollector.collect(self)
         self.schedule.step()
-        if self.do_plot:
+        if self.do_anim:
             self.plot()
 
     # Based on the current opinion vectors and party assignments of all agents,
@@ -439,10 +439,10 @@ if __name__ == "__main__":
 
     num_sims = int(sys.argv[1])
     if num_sims == 1 and len(sys.argv) == 3:
-        do_plot = True
+        do_anim = True
         anim_filename = sys.argv[1]
     else:
-        do_plot = False
+        do_anim = False
 
     params = {
         "N": N,
@@ -459,11 +459,11 @@ if __name__ == "__main__":
         s = Society(params["N"], params["p"], params["cluster_threshold"],
             params["num_candidates"], params["max_iter"],
             params["no_vote_threshold"], params["frac_rational"],
-            election_steps, do_plot)
+            election_steps, do_anim)
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
-        if do_plot:
+        if do_anim:
             print(f"Making animation {anim_filename}...")
             s.make_anim()
 
