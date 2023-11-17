@@ -87,7 +87,7 @@ def determine_voting_algorithms(self):
 # no_vote_threshold -- if an agent is no closer than this value to any
 #   candidate in opinion space, it will sit out the election
 class Society(mesa.Model):
-    def __init__(self, N, p, max_iter, num_candidates, cluster_threshold,
+    def __init__(self, N, p, cluster_threshold, num_candidates, max_iter,
         no_vote_threshold, percent_rational):
 
         super().__init__()
