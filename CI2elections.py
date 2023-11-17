@@ -88,7 +88,7 @@ def determine_voting_algorithms(self):
 #   candidate in opinion space, it will sit out the election
 class Society(mesa.Model):
     def __init__(self, N, p, cluster_threshold, num_candidates, max_iter,
-        no_vote_threshold, percent_rational):
+        no_vote_threshold, percent_rational, do_plot=False):
 
         super().__init__()
         self.N = N
@@ -104,6 +104,7 @@ class Society(mesa.Model):
         self.max_iter = max_iter
         self.party_centroids = {}
         self.percent_rational = percent_rational
+        self.do_plot = do_plot
 
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
@@ -138,6 +139,8 @@ class Society(mesa.Model):
         if self.step_num % 50 == 0:
             self.datacollector.collect(self)
         self.schedule.step()
+        if self.do_plot:
+            self.plot()
 
     # Based on the current opinion vectors and party assignments of all agents,
     # (re-)compute the centroid opinion for each party.
@@ -160,7 +163,9 @@ class Society(mesa.Model):
     # after votes are tabulated, have each candidate strategically drift()
     # towards a new opinion vector that will get them the most votes.
     #
-    # Returns a list of vote counts, order by candidate number.
+    # Returns two lists of vote counts, order by candidate number: the first
+    # contains "real" election results and the second contains the results
+    # that would have been achieved had every voter voted rationally.
     def elect(self):
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         rational_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
@@ -289,6 +294,8 @@ class Society(mesa.Model):
         plt.savefig(f"output{self.step_num:03}.png")
         plt.close()
 
+    def make_anim(self, filename="CI2.gif"):
+        os.system(f"convert -delay 25 -loop 0 output*.png {filename}")
 
 
 # Represents a candidate of a given party, who has its own array of opinions.
@@ -424,9 +431,12 @@ def is_non_trivial(bucket):
 if __name__ == "__main__":
 
     if len(sys.argv) <= 1:
-        sys.exit("Usage: CI2elections.py numSims.")
+        sys.exit("Usage: CI2elections.py numSims [animationFilename].")
 
     num_sims = int(sys.argv[1])
+    if num_sims == 1 and len(sys.argv) == 2:
+        do_plot = True
+        anim_filename = sys.argv[1]
 
     params = {
         "N": N,
@@ -442,10 +452,14 @@ if __name__ == "__main__":
         # Single run.
         s = Society(params["N"], params["p"], params["cluster_threshold"],
             params["num_candidates"], params["max_iter"],
-            params["no_vote_threshold"], params["percent_rational"])
+            params["no_vote_threshold"], params["percent_rational"],
+            do_plot)
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
+        if do_plot:
+            print(f"Making animation {anim_filename}...")
+            s.make_anim()
 
         # You now have single_results in your environment. For example, you
         # could do:
@@ -470,3 +484,4 @@ if __name__ == "__main__":
         # to see the results of the first simulation in the suite, at time=0.
         # (See other columns in batch_results to explain what each line
         # signifies.)
+
