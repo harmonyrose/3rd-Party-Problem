@@ -18,6 +18,7 @@ import pandas as pd
 import math
 import sys
 import random
+import os
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
 from mesa.batchrunner import batch_run
@@ -33,17 +34,6 @@ def gen_graph(N, p):
         graph = nx.erdos_renyi_graph(N,p)
     return graph
 
-
-# Returns the mean opinion vector of all agents in a given bucket number.
-def get_bucket_avg(bucket):
-    bucket_avg = []
-    for i in range(0, num_opinions):
-        sum = 0
-        for agent in bucket:
-            sum += agent.opinions[i]
-        avg = sum/(len(bucket))
-        bucket_avg.append(avg)
-    return bucket_avg
 
 # Returns the candidate number closest in opinion space to the agent passed.
 # (This is called voting "rationally" since it is based purely on similarity of
@@ -81,28 +71,28 @@ def determine_voting_algorithms(self):
 # candidates for office. Other constructor parameters:
 # p - probability of social connection between any two voters
 # max_iter - the longest time the sim will run before being terminated
-# cluster_threshold - to be considered in the same "bucket" -- i.e., to have
-#   "near-identical opinions" -- agents must be closer than this value to the
-#   average opinion of the other agents in the bucket, on every issue
+# party_switch_threshold - threshold for how close voters' opinions need to be
+#    to a different party's centroid in order for them to switch to that party
 # no_vote_threshold -- if an agent is no closer than this value to any
 #   candidate in opinion space, it will sit out the election
 # frac_rational -- the proportion of voters who will vote rationally (as
 #   opposed to by party)
 # election_steps -- hold an election every this number of steps
 class Society(mesa.Model):
-    def __init__(self, N, p, cluster_threshold, num_candidates, max_iter,
+    def __init__(self, N, p, party_switch_threshold, num_candidates, max_iter,
         no_vote_threshold, frac_rational, election_steps, do_anim=False):
 
         super().__init__()
         self.N = N
         self.p = p
         self.num_candidates = num_candidates
-        self.cluster_threshold = cluster_threshold
+        self.party_switch_threshold = party_switch_threshold
         self.no_vote_threshold = no_vote_threshold
         self.graph = gen_graph(N, p)
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
         self.candidates = []
+        self.voters = []
         self.step_num = 0
         self.max_iter = max_iter
         self.party_centroids = {}
@@ -121,7 +111,7 @@ class Society(mesa.Model):
         # Create random voters, and assign each one to the party whose centroid
         # (candidate; see above) it is closest to in Euclidean opinion space.
         for i in range(self.N):
-            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)),[], 0, 0)
+            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)), 0, 0)
             min_distance = 100
             closest_party = -1
             for party in self.party_centroids:
@@ -130,6 +120,7 @@ class Society(mesa.Model):
                     min_distance = distance
                     closest_party = party
             newVoter.party = closest_party
+            self.voters.append(newVoter)
             self.schedule.add(newVoter)
         determine_voting_algorithms(self)
         self.datacollector = DataCollector(
@@ -162,6 +153,21 @@ class Society(mesa.Model):
                 new_centroid[i] /= party_members
             self.party_centroids[party] = new_centroid
 
+    # If an agent's opinions have changed to be close enough to a different
+    # party's centroid, switch that voter into the different party
+    def switch_parties(self):
+        for voter in self.voters:
+            min_distance = 100
+            closest_party = -1
+            for party in self.party_centroids:
+                distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(voter.opinions, self.party_centroids[party])))
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_party = party
+            if closest_party != voter.party and min_distance < party_switch_threshold:
+                voter.party = closest_party
+
+            
     # Run an election. This involves having each agent vote according to their
     # own algorithm (e.g., party-based, rational) and also vote rationally
     # (regardless of algorithm) so we have election results on each. Then,
@@ -172,6 +178,7 @@ class Society(mesa.Model):
     # contains "real" election results and the second contains the results
     # that would have been achieved had every voter voted rationally.
     def elect(self):
+        self.recompute_centroids()
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         # Have all agents vote based on their voting algorithm and store the
         # vote counts in real_vote_counts
@@ -183,7 +190,6 @@ class Society(mesa.Model):
             real_vote_counts[chosen_candidate.unique_id] += 1
                 
         # drift after election
-        self.recompute_centroids()
         new_opinions = self.drift()
         for candidate in self.candidates:
             candidate.opinions = list(new_opinions[candidate.unique_id])
@@ -316,10 +322,9 @@ class Candidate(mesa.Agent):
 # at each step of the simulation, voter x may influence voter y's
 # opinion on an issue if they agree on a different issue.
 class Voter(mesa.Agent):
-    def __init__(self, unique_id, model, opinions, bucket, party, voting_algorithm):
+    def __init__(self, unique_id, model, opinions, party, voting_algorithm):
         super().__init__(unique_id, model)
         self.opinions = opinions
-        self.bucket = bucket
         self.party = party
         self.voting_algorithm = voting_algorithm
     def step(self):
@@ -353,45 +358,6 @@ class Voter(mesa.Agent):
         else:
             opinion_moved = False
 
-        # if this is the first agent, make a new bucket for it
-        if len(buckets) == 0:
-            bucket = []
-            bucket.append(self)
-            buckets.append(bucket)
-            self.bucket = bucket
-
-        # remove the agent from its current bucket if its opinion changed
-        if opinion_moved:
-            for bucket in buckets:
-                if self in bucket:
-                    bucket.remove(self)
-                    # if the bucket is now empty, remove it
-                    if len(bucket) == 0:
-                        buckets.remove(bucket)
-
-            # place agent in appropriate bucket
-            for bucket in buckets:
-                avg_opinions = get_bucket_avg(bucket)
-                belongs = True
-                for i in np.arange(num_opinions):
-                    if abs(self.opinions[i] - avg_opinions[i]) > self.model.cluster_threshold:
-                        belongs = False
-                if belongs:
-                    bucket.append(self)
-                    self.bucket = bucket
-                    break
-
-        #if the agent is bucketless, put it into its very own bucket
-        in_a_bucket = False
-        for bucket in buckets:
-            if self in bucket:
-                in_a_bucket = True
-        if not in_a_bucket:
-            bucket = []
-            bucket.append(self)
-            self.bucket = bucket
-            buckets.append(bucket)
-
 
 
 
@@ -411,10 +377,9 @@ N = 20
 edge_probability = 0.5
 # Max number of the steps the simulation will run before terminating
 max_iter = 400
-# Threshold for how close voters' opinions need to be in order to be placed in
-# the same bucket
-cluster_threshold = 0.05
-buckets = []
+# Threshold for how close voters' opinions need to be to a different party's
+# centroid in order for them to switch to that party
+party_switch_threshold = 0.2
 # Threshold that determines how far away a voter needs to be from all
 # candidates to not vote 
 no_vote_threshold = pushaway
@@ -424,16 +389,6 @@ num_candidates = 3
 election_steps = 50
 # Proportion of voters who will vote rationally
 frac_rational = 0.75
-
-# Returns true if a bucket is "non-trivial", in that it has 3 or more agents
-# This number may need adjusting based on the total number of voters
-def is_non_trivial(bucket):
-    if len(bucket) > 2:
-        return True
-    else:
-        return False
-
-
 
 if __name__ == "__main__":
 
@@ -450,7 +405,7 @@ if __name__ == "__main__":
     params = {
         "N": N,
         "p": edge_probability,
-        "cluster_threshold": cluster_threshold,
+        "party_switch_threshold": party_switch_threshold,
         "num_candidates": num_candidates,
         "max_iter": max_iter,  # only needed for plot caption
         "no_vote_threshold": no_vote_threshold,
@@ -459,7 +414,7 @@ if __name__ == "__main__":
 
     if num_sims == 1:
         # Single run.
-        s = Society(params["N"], params["p"], params["cluster_threshold"],
+        s = Society(params["N"], params["p"], params["party_switch_threshold"],
             params["num_candidates"], params["max_iter"],
             params["no_vote_threshold"], params["frac_rational"],
             election_steps, do_anim)
