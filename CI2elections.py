@@ -149,23 +149,14 @@ class Society(mesa.Model):
                     party_members += 1
                     for i in range(len(voter.opinions)):
                         new_centroid[i] += voter.opinions[i]
-            for i in range(len(new_centroid)):
-                new_centroid[i] /= party_members
-            self.party_centroids[party] = new_centroid
-
-    # If an agent's opinions have changed to be close enough to a different
-    # party's centroid, switch that voter into the different party
-    def switch_parties(self):
-        for voter in self.voters:
-            min_distance = 100
-            closest_party = -1
-            for party in self.party_centroids:
-                distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(voter.opinions, self.party_centroids[party])))
-                if distance < min_distance:
-                    min_distance = distance
-                    closest_party = party
-            if closest_party != voter.party and min_distance < party_switch_threshold:
-                voter.party = closest_party
+            if party_members != 0:
+                for i in range(len(new_centroid)):
+                    new_centroid[i] /= party_members
+                self.party_centroids[party] = new_centroid
+            else:
+                for candidate in self.candidates:
+                    if candidate.party == party:
+                        self.party_centroids[party] = candidate.opinions
 
             
     # Run an election. This involves having each agent vote according to their
@@ -178,7 +169,6 @@ class Society(mesa.Model):
     # contains "real" election results and the second contains the results
     # that would have been achieved had every voter voted rationally.
     def elect(self):
-        self.recompute_centroids()
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         # Have all agents vote based on their voting algorithm and store the
         # vote counts in real_vote_counts
@@ -327,6 +317,20 @@ class Voter(mesa.Agent):
         self.opinions = opinions
         self.party = party
         self.voting_algorithm = voting_algorithm
+        
+    # If an agent's opinions have changed to be close enough to a different
+    # party's centroid, switch that voter into the different party
+    def switch_parties(self):
+        min_distance = 100
+        closest_party = -1
+        for party in self.model.party_centroids:
+            distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(self.opinions, self.model.party_centroids[party])))
+            if distance < min_distance:
+                min_distance = distance
+                closest_party = party
+        if closest_party != self.party and min_distance < party_switch_threshold:
+            self.party = closest_party
+            
     def step(self):
         # Implements the CI2 influence algorithm.
         # retreives x's neighbors and chooses one at random, y.
@@ -344,7 +348,6 @@ class Voter(mesa.Agent):
         # closer to y's opinion on i2
         if diff <= openness:
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
-            opinion_moved = True
         # if x and y strongly disagree on i1, then x's opinion on i2 will move
         # further from y's opinion on i2
         elif diff >= pushaway:
@@ -352,12 +355,9 @@ class Voter(mesa.Agent):
                 self.opinions[i2] -= ((self.opinions[i2]) / 2)
             else:
                 self.opinions[i2] += ((1-self.opinions[i2])/ 2)
-
-            opinion_moved = True
-
-        else:
-            opinion_moved = False
-
+        # switch parties if party-switching criteria is met
+        self.switch_parties()
+        self.model.recompute_centroids()
 
 
 
