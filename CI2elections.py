@@ -409,7 +409,8 @@ if __name__ == "__main__":
         "num_candidates": num_candidates,
         "max_iter": max_iter,  # only needed for plot caption
         "no_vote_threshold": no_vote_threshold,
-        "frac_rational": frac_rational
+        "frac_rational": frac_rational,
+        "election_steps": election_steps
     }
 
     if num_sims == 1:
