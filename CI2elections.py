@@ -132,8 +132,8 @@ class Society(mesa.Model):
     def step(self):
         self.step_num += 1
         # TODO Issue #12
-        if self.step_num % self.election_steps == 0:
-            self.datacollector.collect(self)
+        #if self.step_num % self.election_steps == 0:
+        self.datacollector.collect(self)
         self.schedule.step()
         if self.do_anim:
             self.plot()
@@ -170,6 +170,8 @@ class Society(mesa.Model):
     # that would have been achieved had every voter voted rationally.
     def elect(self):
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
+        if self.step_num % self.election_steps != 0:
+            return list(real_vote_counts.values())
         # Have all agents vote based on their voting algorithm and store the
         # vote counts in real_vote_counts
         for voter in self.schedule.agents:
@@ -187,6 +189,8 @@ class Society(mesa.Model):
 
     def rational_elect(self):
         rational_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
+        if self.step_num % self.election_steps != 0:
+            return list(rational_vote_counts.values())
         # Have all agents vote rationally and store the vote counts in rational_vote_counts
         for voter in self.schedule.agents:
             chosen_candidate = rational_vote(self, voter)
