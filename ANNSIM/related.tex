@@ -6,14 +6,27 @@
 
 % No opinion space
 In many approaches to modeling elections, voters' attitudes towards the parties
-comprises merely a valence and a magnitude, rather than involving a more
-complex amalgamation of issue positions. For example, in Kottonau and
-Paul-Wohstl's seminal work\cite{kottonau_simulating_2004}, citizens maintain
-a ``mental accounting'' of the parties over the course of an election, and the
-campaigns attempt to optimize their advertising resources to influence would-be
-voters at opportune times. In our model, by contrast, the main levers available
-to a campaign are the party's issue positions, which they can adjust in an
-attempt to woo voters.
+comprises merely a valence and possibly a magnitude, rather than involving a
+more complex amalgamation of issue positions. The original binary voter model,
+for example, utilized only a single ``issue'' upon which an individual could
+hold a position.\cite{holley_ergodic_1975,clifford_model_1973}. Even in
+Kottonau and Paul-Wohstl's much more recent seminal
+work\cite{kottonau_simulating_2004}, citizens maintain a ``mental accounting''
+of only a single variable over the course of an election season -- namely,
+which of the two parties they favor. The campaigns for these parties then
+attempt to optimize their advertising resources to influence would-be voters at
+opportune times. Burke and Searle\cite{burke_quantitatively_2022} followed
+Sobkowicz's emotion/information/opinion (E/I/O)
+approach\cite{sobkowicz_quantitative_2016} in making agents' mental states more
+complex and realistic: in addition to holding a certain opinion about a party
+(or candidate), an agent is, at any moment, in either a ``calm'' or
+``agitated'' state, which controls how they influence and are influenced by
+other agents (and by campaign messaging). Here, too, the object of analysis is
+a single ``issue'' (pro party A or B), not an array of them.
+
+Our model, in contrast to all of these, the main levers available to a campaign
+are the party's issue positions, which they can adjust in an attempt to woo
+voters.
 
 % Election forecasting
 Recently, Gao \textit{et al}\cite{gao_forecasting_2022} have presented a
