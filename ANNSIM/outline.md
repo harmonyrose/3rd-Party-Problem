@@ -1,5 +1,5 @@
-Abstract
-========
+Abstract (SD)
+=============
 * an ABM of the democratic election campaign process 
 * we focus on issue-based politics (not, say, emotional messaging) which seems missing from the literature
 * voters influence one another, and candidates adjust positions to "chase" them
@@ -9,8 +9,8 @@ Abstract
     * how does the electorate's composition of voter strategies affect how often election outcomes are "rational?"
 
 
-Introduction
-============
+Introduction (SD)
+=================
 In real life, politically-minded people have opinions on multiple issues.
 Whether in person or online, they interact on a social network and influence
 each other. Homophily suggests something like the CI2 dynamic.
@@ -19,6 +19,8 @@ each other. Homophily suggests something like the CI2 dynamic.
 one's political opinions and voting decisions, including forms of mass media,
 stable factors like demographics/economics/geography, etc. We can't model
 everything, and in this paper we're focusing on issue-based voting.]
+
+[Disclaimer: we're also not modeling turnout]
 
 (Maybe include this: also in real life, not everyone feels equally strongly
 about every issue.)
@@ -58,7 +60,7 @@ The Model
     2. How voters choose who to interact with
     3. What happens at interaction -- CI2
     4. Turnout: an voter's decision about whether or not to vote
-    5. Different voting algorithms
+    5. Different voting algorithms **(HP)**
         * Rational
         * Bounded Rational (or "Constrained Rational")
         * F&F1
