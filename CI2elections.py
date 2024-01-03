@@ -64,9 +64,9 @@ def determine_voting_algorithms(self):
             voter.voting_algorithm = "rational"
         else:
             voter.voting_algorithm = "party"
-    
 
-    
+
+
 # An agent-based model of a society with N voters and num_candidates political
 # candidates for office. Other constructor parameters:
 # p - probability of social connection between any two voters
@@ -158,7 +158,7 @@ class Society(mesa.Model):
                     if candidate.party == party:
                         self.party_centroids[party] = candidate.opinions
 
-            
+
     # Run an election. This involves having each agent vote according to their
     # own algorithm (e.g., party-based, rational) and also vote rationally
     # (regardless of algorithm) so we have election results on each. Then,
@@ -180,7 +180,7 @@ class Society(mesa.Model):
             else:
                 chosen_candidate = party_vote(self, voter)
             real_vote_counts[chosen_candidate.unique_id] += 1
-                
+
         # drift after election
         new_opinions = self.drift()
         for candidate in self.candidates:
@@ -311,6 +311,9 @@ class Candidate(mesa.Agent):
         super().__init__(unique_id, model)
         self.opinions = opinions
         self.party = party
+    # Note: we can't have Candidates .step() themselves because they need to
+    #   make their chase decisions synchronously, based on where each of them
+    #   were in opinion space last election.
 
 # represents a voter with an array of opinions.
 # at each step of the simulation, voter x may influence voter y's
@@ -321,7 +324,7 @@ class Voter(mesa.Agent):
         self.opinions = opinions
         self.party = party
         self.voting_algorithm = voting_algorithm
-        
+
     # If an agent's opinions have changed to be close enough to a different
     # party's centroid, switch that voter into the different party
     def switch_parties(self):
@@ -334,7 +337,7 @@ class Voter(mesa.Agent):
                 closest_party = party
         if closest_party != self.party and min_distance < party_switch_threshold:
             self.party = closest_party
-            
+
     def step(self):
         # Implements the CI2 influence algorithm.
         # retreives x's neighbors and chooses one at random, y.
@@ -385,7 +388,7 @@ max_iter = 400
 # centroid in order for them to switch to that party
 party_switch_threshold = 0.2
 # Threshold that determines how far away a voter needs to be from all
-# candidates to not vote 
+# candidates to not vote
 no_vote_threshold = pushaway
 # Number of candidates
 num_candidates = 3
