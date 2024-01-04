@@ -61,9 +61,9 @@ def determine_voting_algorithms(self):
     rational_voters = random.sample(self.schedule.agents, num_rational)
     for voter in self.schedule.agents:
         if voter in rational_voters:
-            voter.voting_algorithm = "rational"
+            voter.voting_algorithm = rational_vote
         else:
-            voter.voting_algorithm = "party"
+            voter.voting_algorithm = party_vote
 
 
 
@@ -176,10 +176,7 @@ class Society(mesa.Model):
         # Have all agents vote based on their voting algorithm and store the
         # vote counts in real_vote_counts
         for voter in self.schedule.agents:
-            if voter.voting_algorithm == "rational":
-                chosen_candidate = rational_vote(self, voter)
-            else:
-                chosen_candidate = party_vote(self, voter)
+            chosen_candidate = voter.voting_algorithm(self, voter)
             real_vote_counts[chosen_candidate.unique_id] += 1
 
         # chase after election
