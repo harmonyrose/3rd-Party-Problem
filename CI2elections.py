@@ -80,7 +80,7 @@ def determine_voting_algorithms(self):
 # election_steps -- hold an election every this number of steps
 class Society(mesa.Model):
     def __init__(self, N, p, party_switch_threshold, num_candidates, max_iter,
-        no_vote_threshold, frac_rational, election_steps, do_anim=False):
+        no_vote_threshold, frac_rational, chase_radius, election_steps, do_anim=False):
 
         super().__init__()
         self.N = N
@@ -97,6 +97,7 @@ class Society(mesa.Model):
         self.max_iter = max_iter
         self.party_centroids = {}
         self.frac_rational = frac_rational
+        self.chase_radius = chase_radius
         self.election_steps = election_steps
         self.do_anim = do_anim
 
@@ -201,35 +202,34 @@ class Society(mesa.Model):
     def chase(self):
         optimal_opinions = {candidate.unique_id: [] for candidate in self.candidates}
         for candidate in self.candidates:
-            # create an array of offsets within ±0.2
-
-            offset_range = np.linspace(-0.2, 0.2, 9)
+            # creates an array that essentially acts as the diameter of the
+            # chase_space where the points are spaced out by 0.05
+            num_points = int(self.chase_radius * 40) + 1
+            chase_diameter = np.linspace((-1 * self.chase_radius), self.chase_radius, num_points)
 
             # Generate the Cartesian product of num_opinions copies of the
-            # offset_range. This gives us an iterator of tuples, each of size
+            # chase_diameter. This gives us an iterator of tuples, each of size
             # num_opinions, that represents a possible distance (in opinion
             # space) that this candidate will consider moving to in order to
             # get more votes.
-            offset_combinations = product(offset_range, repeat=len(candidate.opinions))
-
+            chase_points = product(chase_diameter, repeat=len(candidate.opinions))
             # Initialize an empty list to store all the opinion vectors this
             # candidate will consider.
-            opinions_to_consider = []
-
-            for offsets in offset_combinations:
+            chase_space = []
+            for chase_point in chase_points:
                 # calculate neighboring arrays based on party centroid
-                opinion_to_consider = np.array(self.party_centroids[candidate.party]) + np.array(offsets)
-                opinions_to_consider.append(opinion_to_consider)
+                chase_space_points = np.array(self.party_centroids[candidate.party]) + np.array(chase_point)
+                chase_space.append(chase_space_points)
 
             # Store all these possible opinion vectors in a dictionary, so we
             # can store this candidate's vote totals for each one.
-            tuples_to_consider = [tuple(arr) for arr in opinions_to_consider]
-            vote_counts = {t: 0 for t in tuples_to_consider}
+            chase_space_tuples = [tuple(arr) for arr in chase_space]
+            vote_counts = {t: 0 for t in chase_space_tuples}
 
             # Store the candidate's current (original) opinions, before making
             # any of these hypothetical choices.
             original_opinions = candidate.opinions
-            for t in tuples_to_consider:
+            for t in chase_space_tuples:
                 candidate.opinions = t
                 for voter in self.schedule.agents:
                     chosen_candidate = rational_vote(self, voter)
@@ -396,7 +396,8 @@ num_candidates = 3
 election_steps = 50
 # Proportion of voters who will vote rationally
 frac_rational = 0.75
-
+# "Radius" of the hypercube in which candidates can move to chase votes
+chase_radius = 0.2
 if __name__ == "__main__":
 
     if len(sys.argv) <= 1:
@@ -417,6 +418,7 @@ if __name__ == "__main__":
         "max_iter": max_iter,  # only needed for plot caption
         "no_vote_threshold": no_vote_threshold,
         "frac_rational": frac_rational,
+        "chase_radius": chase_radius,
         "election_steps": election_steps
     }
 
@@ -425,7 +427,7 @@ if __name__ == "__main__":
         s = Society(params["N"], params["p"], params["party_switch_threshold"],
             params["num_candidates"], params["max_iter"],
             params["no_vote_threshold"], params["frac_rational"],
-            election_steps, do_anim)
+            params["chase_radius"], election_steps, do_anim)
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
