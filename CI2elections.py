@@ -162,7 +162,7 @@ class Society(mesa.Model):
     # Run an election. This involves having each agent vote according to their
     # own algorithm (e.g., party-based, rational) and also vote rationally
     # (regardless of algorithm) so we have election results on each. Then,
-    # after votes are tabulated, have each candidate strategically drift()
+    # after votes are tabulated, have each candidate strategically chase()
     # towards a new opinion vector that will get them the most votes.
     #
     # Returns two lists of vote counts, order by candidate number: the first
@@ -181,8 +181,8 @@ class Society(mesa.Model):
                 chosen_candidate = party_vote(self, voter)
             real_vote_counts[chosen_candidate.unique_id] += 1
 
-        # drift after election
-        new_opinions = self.drift()
+        # chase after election
+        new_opinions = self.chase()
         for candidate in self.candidates:
             candidate.opinions = list(new_opinions[candidate.unique_id])
         return list(real_vote_counts.values())
@@ -197,8 +197,8 @@ class Society(mesa.Model):
             rational_vote_counts[chosen_candidate.unique_id] += 1
         return list(rational_vote_counts.values())
 
-    # candidates drift towards the opinions that will get them the most votes
-    def drift(self):
+    # candidates chase towards the opinions that will get them the most votes
+    def chase(self):
         optimal_opinions = {candidate.unique_id: [] for candidate in self.candidates}
         for candidate in self.candidates:
             # create an array of offsets within ±0.2
