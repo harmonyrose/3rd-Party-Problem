@@ -80,7 +80,8 @@ def determine_voting_algorithms(self):
 # election_steps -- hold an election every this number of steps
 class Society(mesa.Model):
     def __init__(self, N, p, party_switch_threshold, num_candidates, max_iter,
-        no_vote_threshold, frac_rational, chase_radius, election_steps, do_anim=False):
+        no_vote_threshold, frac_rational, frac_party, frac_ff1, frac_ff2, 
+        chase_radius, election_steps, do_anim=False):
 
         super().__init__()
         self.N = N
@@ -97,6 +98,9 @@ class Society(mesa.Model):
         self.max_iter = max_iter
         self.party_centroids = {}
         self.frac_rational = frac_rational
+        self.frac_party = frac_party
+        self.frac_ff1 = frac_ff1
+        self.frac_ff2 = frac_ff2
         self.chase_radius = chase_radius
         self.election_steps = election_steps
         self.do_anim = do_anim
@@ -392,7 +396,13 @@ num_candidates = 3
 # Steps between each election
 election_steps = 50
 # Proportion of voters who will vote rationally
-frac_rational = 0.75
+frac_rational = 0.7
+# Proportion of voters who will vote for their party
+frac_party = 0.1
+# Proportion of voters who will vote using the "fast and frugal 1" algorithm
+frac_ff1 = 0.1
+# Proportion of voters who will vote using the "fast and frugal 2" algorithm
+frac_ff2 = 0.1
 # "Radius" of the hypercube in which candidates can move to chase votes
 chase_radius = 0.2
 if __name__ == "__main__":
@@ -415,6 +425,9 @@ if __name__ == "__main__":
         "max_iter": max_iter,  # only needed for plot caption
         "no_vote_threshold": no_vote_threshold,
         "frac_rational": frac_rational,
+        "frac_party": frac_party,
+        "frac_ff1": frac_ff1,
+        "frac_ff2": frac_ff2,
         "chase_radius": chase_radius,
         "election_steps": election_steps
     }
@@ -424,6 +437,7 @@ if __name__ == "__main__":
         s = Society(params["N"], params["p"], params["party_switch_threshold"],
             params["num_candidates"], params["max_iter"],
             params["no_vote_threshold"], params["frac_rational"],
+            params["frac_party"], params["frac_ff1"], params["frac_ff2"],
             params["chase_radius"], election_steps, do_anim)
         for i in range(max_iter):
             s.step()
