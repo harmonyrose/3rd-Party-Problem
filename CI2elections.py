@@ -131,7 +131,9 @@ class Society(mesa.Model):
         self.datacollector = DataCollector(
             agent_reporters={},
             model_reporters={"rational_results": Society.rational_elect,
-                             "election_results": Society.elect})
+                             "election_results": Society.elect},
+            tables={ "party_switches":
+                ["agent_id","old_party","new_party","iter"] })
 
     # Make each agent run, and hold an election if it's time to.
     def step(self):
@@ -337,6 +339,9 @@ class Voter(mesa.Agent):
                 min_distance = distance
                 closest_party = party
         if closest_party != self.party and min_distance < party_switch_threshold:
+            self.model.datacollector.add_table_row("party_switches",
+                { "agent_id": self.unique_id, "old_party": self.party,
+                "new_party": closest_party, "iter": self.model.step_num})
             self.party = closest_party
 
     def step(self):
@@ -367,6 +372,37 @@ class Voter(mesa.Agent):
         self.switch_parties()
         self.model.recompute_centroids()
 
+
+def plot_election_outcomes(results):
+    er = results['election_results']
+    rr = results['rational_results']
+    # Ugliest code ever? Candidate...
+    er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
+    rr = pd.DataFrame.from_dict(dict(zip(rr.index,rr.values))).transpose()
+    fig = plt.figure()
+    axer = fig.add_subplot(211)
+    axrr = fig.add_subplot(212)
+    axer.title.set_text("Actual election results")
+    axrr.title.set_text("Hypothetical (rational) results")
+    axer.plot(er.index,er)
+    axrr.plot(rr.index,rr)
+    axer.set_ylim((0,er.max(axis=None)*1.1))
+    axrr.set_ylim((0,er.max(axis=None)*1.1))
+    axrr.set_xlabel(
+        f"Election number (one per {election_steps} iterations)")
+    plt.tight_layout()
+    plt.savefig(f"election_outcomes.png")
+
+
+def plot_party_switches(party_switches):
+    plt.figure()
+    ps_time = party_switches.value_counts('iter').sort_index()
+    plt.plot(ps_time.index, ps_time)
+    plt.title("Number of voter party switches")
+    plt.xlabel("Simulation step")
+    plt.ylabel("# voters who switched parties")
+    plt.tight_layout()
+    plt.savefig(f"party_switches.png")
 
 
 # Parameters
@@ -442,6 +478,7 @@ if __name__ == "__main__":
         for i in range(max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
+        party_switches = s.datacollector.get_table_dataframe("party_switches")
         if do_anim:
             print(f"Making animation {anim_filename}...")
             s.make_anim()
@@ -451,24 +488,8 @@ if __name__ == "__main__":
         # >>> single_results.iloc[0].election_results
         # to see the results at time=0.
 
-        er = single_results['election_results']
-        rr = single_results['rational_results']
-        # Ugliest code ever? Candidate...
-        er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
-        rr = pd.DataFrame.from_dict(dict(zip(rr.index,rr.values))).transpose()
-        fig = plt.figure()
-        axer = fig.add_subplot(211)
-        axrr = fig.add_subplot(212)
-        axer.title.set_text("Actual election results")
-        axrr.title.set_text("Hypothetical (rational) results")
-        axer.plot(er.index,er)
-        axrr.plot(rr.index,rr)
-        axer.set_ylim((0,er.max(axis=None)*1.1))
-        axrr.set_ylim((0,er.max(axis=None)*1.1))
-        axrr.set_xlabel(
-            f"Election number (one per {election_steps} iterations)")
-        plt.tight_layout()
-        plt.savefig(f"election_outcomes.png")
+        plot_election_outcomes(single_results)
+        plot_party_switches(party_switches)
 
     else:
 
