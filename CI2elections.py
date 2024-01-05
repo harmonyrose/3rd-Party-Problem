@@ -169,7 +169,9 @@ class Society(mesa.Model):
                         self.party_centroids[party] = candidate.opinions
 
 
-    # Run an election. This involves having each agent vote according to their
+    # Run an election, if it's time to. (This function will simply return
+    # all zeros if it's not an election time step.)
+    # Runnin an election involves having each agent vote according to their
     # own algorithm (e.g., party-based, rational) and also vote rationally
     # (regardless of algorithm) so we have election results on each. Then,
     # after votes are tabulated, have each candidate strategically chase()
@@ -194,6 +196,9 @@ class Society(mesa.Model):
             candidate.opinions = list(new_opinions[candidate.unique_id])
         return list(real_vote_counts.values())
 
+    # See comments on .elect(). All is the same, except that .rational_elect()
+    # disregards voting algorithm, always using rational_vote() instead. Also,
+    # no candidate chasing is performed.
     def rational_elect(self):
         rational_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         if self.step_num % self.election_steps != 0:
@@ -381,11 +386,11 @@ class Voter(mesa.Agent):
 
 def get_election_results(results):
     """
-    Given a results DataFrame from a single simulation run, extract the
+    Given a results DataFrame from a single or batch run, extract the
     candidate vote totals by election number and produce two DataFrames of
     results: one for actual, and one for rational, elections.
     
-    Input: results looks like this:
+    Input: for single runs, results looks like this:
         rational_results election_results
     0          [0, 0, 0]        [0, 0, 0]    # <- all 0's because no election
     1          [0, 0, 0]        [0, 0, 0]    # was run at any of these times
@@ -394,20 +399,39 @@ def get_election_results(results):
     49        [19, 0, 1]       [16, 4, 0]    # <- ah! an actual election
     ...
 
-    Output: each of the two DataFrames will look like this:
+    For batch runs, results looks like this:
+        RunId   rational_results election_results
+    0       0          [0, 0, 0]        [0, 0, 0]
+    1       0          [0, 0, 0]        [0, 0, 0]
+    2       0          [0, 0, 0]        [0, 0, 0]
+    ...
+    49     19         [19, 0, 1]       [16, 4, 0]
+    ...
+
+
+    Output: for single runs, each of the two DataFrames will look like this:
         0   1   2
     0  16   4   0
     1   1  17   2
     2   3  17   0
     ...
 
+    For batch runs, each of the two DataFrames will look like this:
+
     """
     # Ugliest code ever? Candidate...
+    if 'RunId' in results:
+        # Batch run
+        runId_iter = results[['RunId','Step']]
     er = results['election_results']
     rr = results['rational_results']
     er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
     rr = pd.DataFrame.from_dict(dict(zip(rr.index,rr.values))).transpose()
     election_times = er.sum(axis=1) > 0
+    if 'RunId' in results:
+        # Batch run
+        er = pd.concat([runId_iter,er],axis=1)
+        rr = pd.concat([runId_iter,rr],axis=1)
     er = er[election_times].reset_index(drop=True)
     rr = rr[election_times].reset_index(drop=True)
     return er, rr
@@ -540,11 +564,12 @@ if __name__ == "__main__":
             parameters=params,
             iterations=num_sims,
             max_steps=max_iter,
-            number_processes=None,   # make this 1 to use only one CPU
-            data_collection_period=election_steps
-            )
+            number_processes=None,     # make this 1 to use only one CPU
+            data_collection_period=1   # grab data every step
+        )
 
         batch_results = pd.DataFrame(batch_results)
+        er, rr = get_election_results(batch_results)
 
         # You now have batch_results in your environment. For example, you
         # could do:
@@ -552,4 +577,6 @@ if __name__ == "__main__":
         # to see the results of the first simulation in the suite, at time=0.
         # (See other columns in batch_results to explain what each line
         # signifies.)
+        # As a bonus, you also have er and rr in your environment, which gives
+        # you the vote totals for all elections in all the batch runs.
 
