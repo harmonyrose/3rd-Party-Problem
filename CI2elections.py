@@ -132,8 +132,11 @@ class Society(mesa.Model):
             agent_reporters={},
             model_reporters={"rational_results": Society.rational_elect,
                              "election_results": Society.elect},
-            tables={ "party_switches":
-                ["agent_id","old_party","new_party","iter"] })
+            tables={
+                "party_switches": ["agent_id","old_party","new_party","iter"],
+                "zero_votes": ["party","iter"]
+            }
+        )
 
     # Make each agent run, and hold an election if it's time to.
     def step(self):
@@ -241,6 +244,9 @@ class Society(mesa.Model):
 
             # if the candidate got 0 votes, pick a random opinion array, given it is between 0-1
             if max(vote_counts.values()) == 0:
+                self.datacollector.add_table_row("zero_votes",
+                    { 'party': candidate.party,
+                    'iter': self.step_num })
                 for key in vote_counts:
                     if all(0 <= value <= 1 for value in key):
                         max_key = key
@@ -479,6 +485,7 @@ if __name__ == "__main__":
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
         party_switches = s.datacollector.get_table_dataframe("party_switches")
+        zero_votes = s.datacollector.get_table_dataframe("zero_votes")
         if do_anim:
             print(f"Making animation {anim_filename}...")
             s.make_anim()
@@ -490,6 +497,13 @@ if __name__ == "__main__":
 
         plot_election_outcomes(single_results)
         plot_party_switches(party_switches)
+        if len(zero_votes) > 0:
+            mins = zero_votes.groupby('party').min()
+            for m in mins.itertuples():
+                print(f"Candidate {m.Index} had zero votes as early as"
+                    f" the step-{m.iter} election.")
+        else:
+            print("No zero vote candidates.")
 
     else:
 
