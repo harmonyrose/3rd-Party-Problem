@@ -215,14 +215,14 @@ class Society(mesa.Model):
 
             # Generate the Cartesian product of num_opinions copies of the
             # chase_diameter. This gives us an iterator of tuples, each of size
-            # num_opinions, that represents a possible distance (in opinion
+            # num_opinions, that represents a possible delta-shift (in opinion
             # space) that this candidate will consider moving to in order to
             # get more votes.
-            chase_points = product(chase_diameter, repeat=len(candidate.opinions))
+            chase_deltas = product(chase_diameter, repeat=len(candidate.opinions))
             # Initialize an empty list to store all the opinion vectors this
             # candidate will consider.
             chase_space = []
-            for chase_point in chase_points:
+            for chase_point in chase_deltas:
                 # calculate neighboring arrays based on party centroid
                 chase_space_points = np.array(self.party_centroids[candidate.party]) + np.array(chase_point)
                 chase_space.append(chase_space_points)
