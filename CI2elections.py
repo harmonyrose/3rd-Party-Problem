@@ -80,7 +80,7 @@ def determine_voting_algorithms(self):
 # election_steps -- hold an election every this number of steps
 class Society(mesa.Model):
     def __init__(self, N, p, party_switch_threshold, num_candidates, max_iter,
-        no_vote_threshold, frac_rational, frac_party, frac_ff1, frac_ff2, 
+        no_vote_threshold, frac_rational, frac_party, frac_ff1, frac_ff2,
         chase_radius, election_steps, do_anim=False):
 
         super().__init__()
@@ -273,7 +273,6 @@ class Society(mesa.Model):
             # store the optimal opinions and set the candidate's opinions back to
             # what they were originally
             clipped_max_key = tuple(max_key_list)
-            print(f"candidate {candidate.unique_id}: {clipped_max_key}") #" {vote_counts[max_key]}")
             clipped_max_key = list(clipped_max_key)
             optimal_opinions[candidate.unique_id] = clipped_max_key
             candidate.opinions = original_opinions
@@ -389,8 +388,8 @@ def get_election_results(results):
     Given a results DataFrame from a single or batch run, extract the
     candidate vote totals by election number and produce two DataFrames of
     results: one for actual, and one for rational, elections.
-    
-    Input: for single runs, results looks like this:
+
+    Input: for single runs, results should look like this:
         rational_results election_results
     0          [0, 0, 0]        [0, 0, 0]    # <- all 0's because no election
     1          [0, 0, 0]        [0, 0, 0]    # was run at any of these times
@@ -399,7 +398,7 @@ def get_election_results(results):
     49        [19, 0, 1]       [16, 4, 0]    # <- ah! an actual election
     ...
 
-    For batch runs, results looks like this:
+    For batch runs, results should look like this:
         RunId   rational_results election_results
     0       0          [0, 0, 0]        [0, 0, 0]
     1       0          [0, 0, 0]        [0, 0, 0]
@@ -420,9 +419,6 @@ def get_election_results(results):
 
     """
     # Ugliest code ever? Candidate...
-    if 'RunId' in results:
-        # Batch run
-        runId_iter = results[['RunId','Step']]
     er = results['election_results']
     rr = results['rational_results']
     er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
@@ -430,10 +426,20 @@ def get_election_results(results):
     election_times = er.sum(axis=1) > 0
     if 'RunId' in results:
         # Batch run
-        er = pd.concat([runId_iter,er],axis=1)
-        rr = pd.concat([runId_iter,rr],axis=1)
+        runId_step = results[['RunId','Step']]
+        runId_step.loc[:,'Step'] += 1   # this is a sin, aligning iterations
+                                        # this way, and I will pay for it in
+                                        # the afterlife
+        er = pd.concat([runId_step,er],axis=1)
+        rr = pd.concat([runId_step,rr],axis=1)
     er = er[election_times].reset_index(drop=True)
     rr = rr[election_times].reset_index(drop=True)
+    if 'RunId' in results:
+        # Batch run
+        elec_num = er.Step / er.Step.min()
+        elec_num = elec_num.astype(int)
+        er['elec_num'] = elec_num
+        rr['elec_num'] = elec_num
     return er, rr
 
 def plot_election_outcomes(results):
@@ -451,6 +457,7 @@ def plot_election_outcomes(results):
         f"Election number (one per {election_steps} iterations)")
     plt.tight_layout()
     plt.savefig(f"election_outcomes.png")
+    plt.close()
 
 
 def plot_party_switches(party_switches):
@@ -462,6 +469,20 @@ def plot_party_switches(party_switches):
     plt.ylabel("# voters who switched parties")
     plt.tight_layout()
     plt.savefig(f"party_switches.png")
+    plt.close()
+
+
+def compute_winners(results):
+    """
+    Given a DataFrame that has, possibly among other columns, integer-named
+    columns containing vote counts, add to it a new column called "winner"
+    with the candidate/party number who won each election.
+    """
+    assert num_candidates-1 in results.columns
+    assert num_candidates not in results.columns
+
+    winners = results[range(num_candidates)].idxmax(axis=1)
+    results['winner'] = winners
 
 
 # Parameters
@@ -580,3 +601,13 @@ if __name__ == "__main__":
         # As a bonus, you also have er and rr in your environment, which gives
         # you the vote totals for all elections in all the batch runs.
 
+        compute_winners(er)
+        compute_winners(rr)
+        er['rational'] = er.winner == rr.winner
+        frac_rational_by_elec_num = er[['elec_num','rational']].groupby(
+            'elec_num').mean('rational') * 100
+        frac_rational_by_elec_num.plot(kind='bar')
+        plt.ylim((0,101))
+        plt.title("Percentage of rational election outcomes")
+        plt.savefig('fracRational.png')
+        plt.close()
