@@ -379,12 +379,41 @@ class Voter(mesa.Agent):
         self.model.recompute_centroids()
 
 
-def plot_election_outcomes(results):
+def get_election_results(results):
+    """
+    Given a results DataFrame from a single simulation run, extract the
+    candidate vote totals by election number and produce two DataFrames of
+    results: one for actual, and one for rational, elections.
+    
+    Input: results looks like this:
+        rational_results election_results
+    0          [0, 0, 0]        [0, 0, 0]    # <- all 0's because no election
+    1          [0, 0, 0]        [0, 0, 0]    # was run at any of these times
+    2          [0, 0, 0]        [0, 0, 0]
+    ...
+    49        [19, 0, 1]       [16, 4, 0]    # <- ah! an actual election
+    ...
+
+    Output: each of the two DataFrames will look like this:
+        0   1   2
+    0  16   4   0
+    1   1  17   2
+    2   3  17   0
+    ...
+
+    """
+    # Ugliest code ever? Candidate...
     er = results['election_results']
     rr = results['rational_results']
-    # Ugliest code ever? Candidate...
     er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
     rr = pd.DataFrame.from_dict(dict(zip(rr.index,rr.values))).transpose()
+    election_times = er.sum(axis=1) > 0
+    er = er[election_times].reset_index(drop=True)
+    rr = rr[election_times].reset_index(drop=True)
+    return er, rr
+
+def plot_election_outcomes(results):
+    er, rr = get_election_results(results)
     fig = plt.figure()
     axer = fig.add_subplot(211)
     axrr = fig.add_subplot(212)
