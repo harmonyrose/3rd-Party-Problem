@@ -9,6 +9,7 @@ import math
 import sys
 import random
 import os
+import argparse
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
 from mesa.batchrunner import batch_run
@@ -43,70 +44,60 @@ def party_vote(self, voter):
         if voter.party == candidate.party:
             return candidate
 
-# Function used at initialization to determine all voters' voting algorithms
-# based on frac_rational. Sets self.voting_algorithm to either "rational"
-# or "party" for every voter.
-def determine_voting_algorithms(self):
-    num_rational = int(frac_rational * N)
-    rational_voters = random.sample(self.schedule.agents, num_rational)
-    for voter in self.schedule.agents:
-        if voter in rational_voters:
-            voter.voting_algorithm = rational_vote
-        else:
-            voter.voting_algorithm = party_vote
 
 
 
 # An agent-based model of a society with N voters and num_candidates political
 # candidates for office. Other constructor parameters:
 # p - probability of social connection between any two voters
-# max_iter - the longest time the sim will run before being terminated
 # party_switch_threshold - threshold for how close voters' opinions need to be
 #    to a different party's centroid in order for them to switch to that party
-# no_vote_threshold -- if an agent is no closer than this value to any
-#   candidate in opinion space, it will sit out the election
-# frac_rational -- the proportion of voters who will vote rationally (as
-#   opposed to by party)
+# num_candidates - number of candidates in the election
+# num_opinions - number of issues that voters/candidates have opinions on
+# max_iter - the longest time the sim will run before being terminated
+# frac_rational -- the proportion of voters who will vote rationally
+# frac_party -- the proportion of voters who will vote based solely on party
+# frac_ff1 -- the proportion of voters who will vote using the "fast & frugal"
+#    algorithm, variant 1
+# frac_ff2 -- the proportion of voters who will vote using the "fast & frugal"
+#    algorithm, variant 2
+# chase_radius -- "Radius" of the hypercube in which candidates can chase votes
 # election_steps -- hold an election every this number of steps
+# do_anim -- create single-sim animation?
 class Society(mesa.Model):
-    def __init__(self, N, p, party_switch_threshold, num_candidates, max_iter,
-        no_vote_threshold, frac_rational, frac_party, frac_ff1, frac_ff2,
-        chase_radius, election_steps, do_anim=False):
+    def __init__(self, args, do_anim=False):
 
         super().__init__()
-        self.N = N
-        self.p = p
-        self.num_candidates = num_candidates
-        self.party_switch_threshold = party_switch_threshold
-        self.no_vote_threshold = no_vote_threshold
-        self.graph = gen_graph(N, p)
+        self.__dict__.update(vars(args))
+        self.graph = gen_graph(self.N, self.edge_probability)
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
         self.candidates = []
         self.voters = []
         self.step_num = 0
-        self.max_iter = max_iter
         self.party_centroids = {}
-        self.frac_rational = frac_rational
-        self.frac_party = frac_party
-        self.frac_ff1 = frac_ff1
-        self.frac_ff2 = frac_ff2
-        self.chase_radius = chase_radius
-        self.election_steps = election_steps
+
+        assert math.isclose(self.frac_rational + self.frac_party +
+            self.frac_ff1 + self.frac_ff2, 1.0), \
+            (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
+            f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
+
         self.do_anim = do_anim
 
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
         # candidate's opinion vector. (TODO Issue #1)
         for i in range(self.num_candidates):
-            newCandidate = Candidate(i, self, list(np.random.uniform(0,1,num_opinions)), i)
+            newCandidate = Candidate(i, self,
+                list(np.random.uniform(0,1,self.num_opinions)), i)
             self.party_centroids[i] = newCandidate.opinions
             self.candidates.append(newCandidate)
 
         # Create random voters, and assign each one to the party whose centroid
         # (candidate; see above) it is closest to in Euclidean opinion space.
         for i in range(self.N):
-            newVoter = Voter(i, self, list(np.random.uniform(0,1,num_opinions)), 0, 0)
+            newVoter = Voter(i, self,
+                list(np.random.uniform(0,1,self.num_opinions)), 0, 0)
             min_distance = 100
             closest_party = -1
             for party in self.party_centroids:
@@ -117,7 +108,7 @@ class Society(mesa.Model):
             newVoter.party = closest_party
             self.voters.append(newVoter)
             self.schedule.add(newVoter)
-        determine_voting_algorithms(self)
+        self.determine_voting_algorithms()
         self.datacollector = DataCollector(
             agent_reporters={},
             model_reporters={"rational_results": Society.rational_elect,
@@ -127,6 +118,18 @@ class Society(mesa.Model):
                 "zero_votes": ["party","iter"]
             }
         )
+
+    # Method used at initialization to determine all voters' voting algorithms
+    # based on fractions specified.
+    # TODO HP: make this work for all voting algorithms.
+    def determine_voting_algorithms(self):
+        num_rational = int(self.frac_rational * self.N)
+        rational_voters = random.sample(self.schedule.agents, num_rational)
+        for voter in self.schedule.agents:
+            if voter in rational_voters:
+                voter.voting_algorithm = rational_vote
+            else:
+                voter.voting_algorithm = party_vote
 
     # Make each agent run, and hold an election if it's time to.
     def step(self):
@@ -142,7 +145,7 @@ class Society(mesa.Model):
     # (re-)compute the centroid opinion for each party.
     def recompute_centroids(self):
         for party in self.party_centroids:
-            new_centroid = [0] * num_opinions
+            new_centroid = [0] * self.num_opinions
             party_members = 0
             for voter in self.schedule.agents:
                 if voter.party == party:
@@ -338,7 +341,8 @@ class Voter(mesa.Agent):
             if distance < min_distance:
                 min_distance = distance
                 closest_party = party
-        if closest_party != self.party and min_distance < party_switch_threshold:
+        if (closest_party != self.party and
+            min_distance < self.model.party_switch_threshold):
             self.model.datacollector.add_table_row("party_switches",
                 { "agent_id": self.unique_id, "old_party": self.party,
                 "new_party": closest_party, "iter": self.model.step_num})
@@ -351,19 +355,19 @@ class Voter(mesa.Agent):
         neighbor = self.model.schedule.agents[np.random.choice(nbrs)]
         # calculates the absolute difference between x and y's opinions
         # on a randomly chosen issue, i1.
-        i1 = np.random.choice(np.arange(num_opinions))
+        i1 = np.random.choice(np.arange(self.model.num_opinions))
         diff = abs(self.opinions[i1] - neighbor.opinions[i1])
         # chooses another random issue, i2, that is different from i1
-        i2 = np.random.choice(np.arange(num_opinions))
+        i2 = np.random.choice(np.arange(self.model.num_opinions))
         while i2 == i1:
-            i2 = np.random.choice(np.arange(num_opinions))
+            i2 = np.random.choice(np.arange(self.model.num_opinions))
         # if x and y agree on i1, then x's opinion on i2 will move
         # closer to y's opinion on i2
-        if diff <= openness:
+        if diff <= self.model.openness:
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
         # if x and y strongly disagree on i1, then x's opinion on i2 will move
         # further from y's opinion on i2
-        elif diff >= pushaway:
+        elif diff >= self.model.pushaway:
             if self.opinions[i2] < neighbor.opinions[i2]:
                 self.opinions[i2] -= ((self.opinions[i2]) / 2)
             else:
@@ -444,7 +448,7 @@ def plot_election_outcomes(results):
     axer.set_ylim((0,er.max(axis=None)*1.1))
     axrr.set_ylim((0,er.max(axis=None)*1.1))
     axrr.set_xlabel(
-        f"Election number (one per {election_steps} iterations)")
+        f"Election number (one per {len(results) // len(er)} iterations)")
     plt.tight_layout()
     plt.savefig(f"election_outcomes.png")
     plt.close()
@@ -462,7 +466,7 @@ def plot_party_switches(party_switches):
     plt.close()
 
 
-def compute_winners(results):
+def compute_winners(results, num_candidates):
     """
     Given a DataFrame that has, possibly among other columns, integer-named
     columns containing vote counts, add to it a new column called "winner"
@@ -475,83 +479,61 @@ def compute_winners(results):
     results['winner'] = winners
 
 
-# Parameters
+parser = argparse.ArgumentParser(description="Election ABM.")
+parser.add_argument("-n", "--num_sims", type=int, default=1,
+    help="Number of simulations to run (1 = single mode, >1 = batch mode)")
+parser.add_argument("--openness", type=float, default=0.1,
+    help="Threshold when agents are close enough on one issue to attract "
+        "on a second issue")
+parser.add_argument("--pushaway", type=float, default=0.6,
+    help="Threshold when agents are far enough away on one issue to push "
+        "away on a second issue")
+parser.add_argument("--num_opinions", type=int, default=3,
+    help="Number of opinions held by each voter and candidate")
+parser.add_argument("-N", type=int, default=20,
+    help="Number of voter agents (and nodes in the ER graph)")
+parser.add_argument("--num_candidates", type=int, default=3,
+    help="Number of candidates")
+parser.add_argument("--edge_probability", type=float, default=0.5,
+    help="Edge probability of the ER graph")
+parser.add_argument("--max_iter", type=int, default=400,
+    help="Max number of the steps the simulation will run before terminating")
+parser.add_argument("--party_switch_threshold", type=float, default=0.2,
+    help="Threshold for how close voters' opinions need to be to a different "
+        "party's # centroid in order for them to switch to that party")
+parser.add_argument("--election_steps", type=int, default=50,
+    help="Steps between each election")
+parser.add_argument("--frac_rational", type=float, default=0.7,
+    help="Proportion of voters who will vote rationally")
+parser.add_argument("--frac_party", type=float, default=0.1,
+    help="Proportion of voters who will vote solely based on party")
+parser.add_argument("--frac_ff1", type=float, default=0.1,
+    help="Proportion of voters who will use the 'fast & frugal 1' voting alg")
+parser.add_argument("--frac_ff2", type=float, default=0.1,
+    help="Proportion of voters who will use the 'fast & frugal 2' voting alg")
+parser.add_argument("--chase_radius", type=float, default=0.2,
+    help="'Radius' of the hypercube in which candidates can chase votes")
+parser.add_argument("--animation_filename", type=str, default=None,
+    help="Filename in which to store single-sim animation (if any)")
 
-# Threshold that determines when agents are close enough on one issue to
-# assimilate on a second issue
-openness = 0.1
-# Threshold that determines when ages are far away enough on one issue to
-# push away from each other on a second issue
-pushaway = 0.6
-# The number of opinions held by each voter and candidate
-num_opinions = 3
-# Number of nodes in the ER graph
-N = 20
-# Edge probability of the ER graph
-edge_probability = 0.5
-# Max number of the steps the simulation will run before terminating
-max_iter = 400
-# Threshold for how close voters' opinions need to be to a different party's
-# centroid in order for them to switch to that party
-party_switch_threshold = 0.2
-# Threshold that determines how far away a voter needs to be from all
-# candidates to not vote
-no_vote_threshold = pushaway
-# Number of candidates
-num_candidates = 3
-# Steps between each election
-election_steps = 50
-# Proportion of voters who will vote rationally
-frac_rational = 0.7
-# Proportion of voters who will vote for their party
-frac_party = 0.1
-# Proportion of voters who will vote using the "fast and frugal 1" algorithm
-frac_ff1 = 0.1
-# Proportion of voters who will vote using the "fast and frugal 2" algorithm
-frac_ff2 = 0.1
-# "Radius" of the hypercube in which candidates can move to chase votes
-chase_radius = 0.2
+
+
 if __name__ == "__main__":
 
-    if len(sys.argv) <= 1:
-        sys.exit("Usage: CI2elections.py numSims [animationFilename].")
+    args = parser.parse_args()
 
-    num_sims = int(sys.argv[1])
-    if num_sims == 1 and len(sys.argv) == 3:
-        do_anim = True
-        anim_filename = sys.argv[1]
-    else:
-        do_anim = False
+    do_anim = (args.num_sims == 1 and args.animation_filename)
 
-    params = {
-        "N": N,
-        "p": edge_probability,
-        "party_switch_threshold": party_switch_threshold,
-        "num_candidates": num_candidates,
-        "max_iter": max_iter,  # only needed for plot caption
-        "no_vote_threshold": no_vote_threshold,
-        "frac_rational": frac_rational,
-        "frac_party": frac_party,
-        "frac_ff1": frac_ff1,
-        "frac_ff2": frac_ff2,
-        "chase_radius": chase_radius,
-        "election_steps": election_steps
-    }
-
-    if num_sims == 1:
+    if args.num_sims == 1:
         # Single run.
-        s = Society(params["N"], params["p"], params["party_switch_threshold"],
-            params["num_candidates"], params["max_iter"],
-            params["no_vote_threshold"], params["frac_rational"],
-            params["frac_party"], params["frac_ff1"], params["frac_ff2"],
-            params["chase_radius"], election_steps, do_anim)
-        for i in range(max_iter):
+        s = Society(args, do_anim)
+        for i in range(args.max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
         party_switches = s.datacollector.get_table_dataframe("party_switches")
         zero_votes = s.datacollector.get_table_dataframe("zero_votes")
         if do_anim:
-            print(f"Making animation {anim_filename}...")
+            print(f"Making animation {args.animation_filename}...")
             s.make_anim()
 
         # You now have single_results in your environment. For example, you
@@ -572,9 +554,9 @@ if __name__ == "__main__":
     else:
 
         batch_results = batch_run(Society,
-            parameters=params,
-            iterations=num_sims,
-            max_steps=max_iter,
+            parameters={ 'args': args },
+            iterations=args.num_sims,
+            max_steps=args.max_iter,
             number_processes=None,     # make this 1 to use only one CPU
             data_collection_period=1   # grab data every step
         )
@@ -591,8 +573,8 @@ if __name__ == "__main__":
         # As a bonus, you also have er and rr in your environment, which gives
         # you the vote totals for all elections in all the batch runs.
 
-        compute_winners(er)
-        compute_winners(rr)
+        compute_winners(er, args.num_candidates)
+        compute_winners(rr, args.num_candidates)
         er['rational'] = er.winner == rr.winner
         frac_rational_by_elec_num = (er[['elec_num','rational']].groupby(
             'elec_num').mean('rational') * 1).rational
