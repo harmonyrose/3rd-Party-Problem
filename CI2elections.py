@@ -1,14 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr  6 15:35:41 2023
-
-@author: harmony peura
-"""
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jan 17 23:19:10 2023
-@author: harmony peura
-"""
+#!/usr/bin/env python3
 
 import mesa
 import networkx as nx
@@ -610,7 +600,9 @@ if __name__ == "__main__":
         ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
             (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
         frac_rational_by_elec_num.plot(kind='bar',
-            yerr=np.c_[ci,ci].transpose(), capsize=5)
+            yerr=np.c_[np.minimum(frac_rational_by_elec_num,ci),
+            np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
+            capsize=5)
         plt.ylim((0,1.1))
         plt.title("Percentage of rational election outcomes")
         plt.savefig('fracRational.png')
