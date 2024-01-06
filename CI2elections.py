@@ -441,8 +441,9 @@ def get_election_results(results):
     return er, rr
 
 def plot_election_outcomes(results, sim_tag):
-    er, rr = get_election_results(results)
+    # Single run
     fig = plt.figure()
+    er, rr = get_election_results(results)
     axer = fig.add_subplot(211)
     axrr = fig.add_subplot(212)
     axer.title.set_text("Actual election results")
@@ -459,6 +460,7 @@ def plot_election_outcomes(results, sim_tag):
 
 
 def plot_party_switches(party_switches, sim_tag):
+    # Single run
     plt.figure()
     ps_time = party_switches.value_counts('iter').sort_index()
     plt.plot(ps_time.index, ps_time)
@@ -469,6 +471,30 @@ def plot_party_switches(party_switches, sim_tag):
     plt.savefig(f"{sim_tag}_party_switches.png")
     plt.close()
 
+
+def plot_rationality_over_time(batch_results, sim_tag):
+    # Batch run
+    plt.figure()
+    er, rr = get_election_results(batch_results)
+    compute_winners(er, args.num_candidates)
+    compute_winners(rr, args.num_candidates)
+    er['rational'] = er.winner == rr.winner
+    frac_rational_by_elec_num = (er[['elec_num','rational']].groupby(
+        'elec_num').mean('rational') * 1).rational
+    # Plot error bars to 95% confidence interval
+    ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
+        (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
+    frac_rational_by_elec_num.plot(kind='bar',
+        yerr=np.c_[np.minimum(frac_rational_by_elec_num,ci),
+        np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
+        capsize=5)
+    plt.ylim((0,1.1))
+    if sim_tag:
+        plt.title(f"% rational election outcomes -- {sim_tag}")
+    else: 
+        plt.title(f"% rational election outcomes")
+    plt.savefig(f'{sim_tag}_fracRational.png')
+    plt.close()
 
 def compute_winners(results, num_candidates):
     """
@@ -580,19 +606,4 @@ if __name__ == "__main__":
         # As a bonus, you also have er and rr in your environment, which gives
         # you the vote totals for all elections in all the batch runs.
 
-        compute_winners(er, args.num_candidates)
-        compute_winners(rr, args.num_candidates)
-        er['rational'] = er.winner == rr.winner
-        frac_rational_by_elec_num = (er[['elec_num','rational']].groupby(
-            'elec_num').mean('rational') * 1).rational
-        # Plot error bars to 95% confidence interval
-        ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
-            (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
-        frac_rational_by_elec_num.plot(kind='bar',
-            yerr=np.c_[np.minimum(frac_rational_by_elec_num,ci),
-            np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
-            capsize=5)
-        plt.ylim((0,1.1))
-        plt.title("Percentage of rational election outcomes")
-        plt.savefig(f'{args.sim_tag}_fracRational.png')
-        plt.close()
+        plot_rationality_over_time(batch_results, args.sim_tag)
