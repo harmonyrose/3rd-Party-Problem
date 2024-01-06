@@ -296,6 +296,7 @@ class Society(mesa.Model):
 
     # Plot a 2-d approximation of the agents (in reduced opinion space).
     def plot(self):
+        print(f"Plotting frame {self.step_num} of {self.max_iter}...")
         svecs = self.compute_SVD()
         plt.clf()
         nx.draw_networkx(self.graph,
@@ -304,11 +305,14 @@ class Society(mesa.Model):
         plt.xlim((-1.2,1.2))
         plt.ylim((-1.2,1.2))
         plt.title(f"Time {self.step_num} of {self.max_iter}")
-        plt.savefig(f"output{self.step_num:03}.png")
+        plt.savefig(f"{self.sim_tag}_output{self.step_num:03}.png")
         plt.close()
 
     def make_anim(self, filename="CI2.gif"):
-        os.system(f"convert -delay 25 -loop 0 output*.png {filename}")
+        if not filename.endswith(".gif"):
+            filename += ".gif"
+        os.system(
+            f"convert -delay 25 -loop 0 {self.sim_tag}_output*.png {filename}")
 
 
 # Represents a candidate of a given party, who has its own array of opinions.
@@ -436,7 +440,7 @@ def get_election_results(results):
         rr['elec_num'] = elec_num
     return er, rr
 
-def plot_election_outcomes(results):
+def plot_election_outcomes(results, sim_tag):
     er, rr = get_election_results(results)
     fig = plt.figure()
     axer = fig.add_subplot(211)
@@ -450,11 +454,11 @@ def plot_election_outcomes(results):
     axrr.set_xlabel(
         f"Election number (one per {len(results) // len(er)} iterations)")
     plt.tight_layout()
-    plt.savefig(f"election_outcomes.png")
+    plt.savefig(f"{sim_tag}_election_outcomes.png")
     plt.close()
 
 
-def plot_party_switches(party_switches):
+def plot_party_switches(party_switches, sim_tag):
     plt.figure()
     ps_time = party_switches.value_counts('iter').sort_index()
     plt.plot(ps_time.index, ps_time)
@@ -462,7 +466,7 @@ def plot_party_switches(party_switches):
     plt.xlabel("Simulation step")
     plt.ylabel("# voters who switched parties")
     plt.tight_layout()
-    plt.savefig(f"party_switches.png")
+    plt.savefig(f"{sim_tag}_party_switches.png")
     plt.close()
 
 
@@ -515,6 +519,8 @@ parser.add_argument("--chase_radius", type=float, default=0.2,
     help="'Radius' of the hypercube in which candidates can chase votes")
 parser.add_argument("--animation_filename", type=str, default=None,
     help="Filename in which to store single-sim animation (if any)")
+parser.add_argument("--sim_tag", type=str, default=None,
+    help="A string to use as prefix to plots produced (no spaces please)")
 
 
 
@@ -533,16 +539,17 @@ if __name__ == "__main__":
         party_switches = s.datacollector.get_table_dataframe("party_switches")
         zero_votes = s.datacollector.get_table_dataframe("zero_votes")
         if do_anim:
-            print(f"Making animation {args.animation_filename}...")
-            s.make_anim()
+            print(f"Building animation {args.animation_filename}...")
+            s.make_anim(args.animation_filename)
+            print(f"...done.")
 
         # You now have single_results in your environment. For example, you
         # could do:
         # >>> single_results.iloc[0].election_results
         # to see the results at time=0.
 
-        plot_election_outcomes(single_results)
-        plot_party_switches(party_switches)
+        plot_election_outcomes(single_results, args.sim_tag)
+        plot_party_switches(party_switches, args.sim_tag)
         if len(zero_votes) > 0:
             mins = zero_votes.groupby('party').min()
             for m in mins.itertuples():
@@ -587,5 +594,5 @@ if __name__ == "__main__":
             capsize=5)
         plt.ylim((0,1.1))
         plt.title("Percentage of rational election outcomes")
-        plt.savefig('fracRational.png')
+        plt.savefig(f'{args.sim_tag}_fracRational.png')
         plt.close()
