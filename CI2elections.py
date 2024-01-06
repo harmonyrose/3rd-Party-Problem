@@ -604,10 +604,14 @@ if __name__ == "__main__":
         compute_winners(er)
         compute_winners(rr)
         er['rational'] = er.winner == rr.winner
-        frac_rational_by_elec_num = er[['elec_num','rational']].groupby(
-            'elec_num').mean('rational') * 100
-        frac_rational_by_elec_num.plot(kind='bar')
-        plt.ylim((0,101))
+        frac_rational_by_elec_num = (er[['elec_num','rational']].groupby(
+            'elec_num').mean('rational') * 1).rational
+        # Plot error bars to 95% confidence interval
+        ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
+            (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
+        frac_rational_by_elec_num.plot(kind='bar',
+            yerr=np.c_[ci,ci].transpose(), capsize=5)
+        plt.ylim((0,1.1))
         plt.title("Percentage of rational election outcomes")
         plt.savefig('fracRational.png')
         plt.close()
