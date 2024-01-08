@@ -10,6 +10,7 @@ import sys
 import random
 import os
 import argparse
+from copy import copy
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
 from mesa.batchrunner import batch_run
@@ -70,6 +71,12 @@ class Society(mesa.Model):
         super().__init__()
         self.__dict__.update(vars(args))
         self.graph = gen_graph(self.N, self.edge_probability)
+
+        # If N is 50 and num_candidates is 3, then agents 0, 1, etc are nodes
+        # 0, 1, ... 49 in the graph, and candidates 0, 1, 2 are 50, 51, 52.
+        for c in range(self.N, self.N + self.num_candidates):
+            self.graph.add_node(c)
+
         self.pos = nx.spring_layout(self.graph)
         self.schedule = RandomActivation(self)
         self.candidates = []
@@ -274,7 +281,8 @@ class Society(mesa.Model):
     # Compute the dimensionality-reduced version of the agent opinion matrix,
     # so that an approximation of it can be plotted in 2-dimensions.
     def compute_SVD(self):
-        X = np.r_[[ a.opinions for a in self.schedule.agents ]]
+        X = np.r_[[ a.opinions for a in self.schedule.agents ],
+            [ c.opinions for c in self.candidates ]]
         # Center & standardize column means.
         X = StandardScaler().fit_transform(X)
         U, S, Vh = np.linalg.svd(X, hermitian=False)
@@ -299,9 +307,23 @@ class Society(mesa.Model):
         print(f"Plotting frame {self.step_num} of {self.max_iter}...")
         svecs = self.compute_SVD()
         plt.clf()
-        nx.draw_networkx(self.graph,
-            {N:(svecs[N,0],svecs[N,1]) for N in range(self.N)},
-            node_color=[ a.opinions for a in self.schedule.agents ])
+        apositions = {a:(svecs[a,0],svecs[a,1]) for a in range(self.N)}
+        cpositions = {c:(svecs[c,0],svecs[c,1]) for c in range(self.N, self.N +
+            self.num_candidates)}
+        positions = copy(apositions)
+        positions.update(cpositions)
+        acolors = [ a.opinions for a in self.schedule.agents ]
+        ccolors = [[1,1,.5]]*self.num_candidates
+        colors = acolors + ccolors
+        labels = { a:str(a) for a in range(self.N) }
+        labels.update({ self.N + c:str(c) for c in range(self.num_candidates) })
+        nx.draw_networkx_edges(self.graph, positions)
+        nx.draw_networkx_nodes(self.graph, apositions, nodelist=range(self.N),
+            node_color=acolors, node_shape="o", node_size=250)
+        nx.draw_networkx_nodes(self.graph, cpositions, nodelist=range(self.N,
+            self.N + self.num_candidates), node_color=ccolors,
+            edgecolors=[.2,.2,.2],node_shape="*", node_size=700)
+        nx.draw_networkx_labels(self.graph, positions, labels=labels, font_size=10)
         plt.xlim((-1.2,1.2))
         plt.ylim((-1.2,1.2))
         plt.title(f"Time {self.step_num} of {self.max_iter}")
@@ -491,7 +513,7 @@ def plot_rationality_over_time(batch_results, sim_tag):
     plt.ylim((0,1.1))
     if sim_tag:
         plt.title(f"% rational election outcomes -- {sim_tag}")
-    else: 
+    else:
         plt.title(f"% rational election outcomes")
     plt.savefig(f'{sim_tag}_fracRational.png')
     plt.close()
