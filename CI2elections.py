@@ -10,7 +10,7 @@ import sys
 import random
 import os
 import argparse
-from copy import copy
+import copy
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
 from mesa.batchrunner import batch_run
@@ -45,9 +45,26 @@ def party_vote(society, voter):
         if voter.party == candidate.party:
             return candidate
 
+def ff1_vote(self, voter):
+    min_distance = 10
+    for candidate in self.candidates:
+        distance = abs(candidate.opinions[voter.ff1_issue]
+                       - voter.opinions[voter.ff1_issue])
+        if distance < min_distance:
+            min_distance = distance
+            closest_candidate = candidate
+    return closest_candidate
 
-
-
+def ff2_vote(self, voter):
+    min_distance = 10
+    for candidate in self.candidates:
+        distance = abs(candidate.opinions[self.ff2_issue]
+                       - voter.opinions[self.ff2_issue])
+        if distance < min_distance:
+            min_distance = distance
+            closest_candidate = candidate
+    return closest_candidate
+    
 # An agent-based model of a society with N voters and num_candidates political
 # candidates for office. Other constructor parameters:
 # p - probability of social connection between any two voters
@@ -83,7 +100,7 @@ class Society(mesa.Model):
         self.voters = []
         self.step_num = 0
         self.party_centroids = {}
-
+        self.ff2_issue = np.random.randint(self.num_opinions)
         assert math.isclose(self.frac_rational + self.frac_party +
             self.frac_ff1 + self.frac_ff2, 1.0), \
             (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
@@ -104,7 +121,8 @@ class Society(mesa.Model):
         # (candidate; see above) it is closest to in Euclidean opinion space.
         for i in range(self.N):
             newVoter = Voter(i, self,
-                list(np.random.uniform(0,1,self.num_opinions)), 0, 0)
+                list(np.random.uniform(0,1,self.num_opinions)), 0, rational_vote, 
+                np.random.randint(self.num_opinions))
             min_distance = 100
             closest_party = -1
             for party in self.party_centroids:
@@ -130,13 +148,24 @@ class Society(mesa.Model):
     # based on fractions specified.
     # TODO HP: make this work for all voting algorithms.
     def determine_voting_algorithms(self):
+        voters = copy.deepcopy(self.schedule.agents)
         num_rational = int(self.frac_rational * self.N)
-        rational_voters = random.sample(self.schedule.agents, num_rational)
+        num_party = int(self.frac_party * self.N)
+        num_ff1 = int(self.frac_ff1 * self.N)
+        rational_voters = random.sample(voters, num_rational)
+        voters = [voter for voter in voters if voter not in rational_voters]
+        party_voters = random.sample(voters, num_party)
+        voters = [voter for voter in voters if voter not in party_voters]
+        ff1_voters = random.sample(voters, num_ff1)
         for voter in self.schedule.agents:
             if voter in rational_voters:
                 voter.voting_algorithm = rational_vote
-            else:
+            elif voter in party_voters:
                 voter.voting_algorithm = party_vote
+            elif voter in ff1_voters:
+                voter.voting_algortihm = ff1_vote
+            else:
+                voter.voting_algorithm = ff2_vote
 
     # Make each agent run, and hold an election if it's time to.
     def step(self):
@@ -181,6 +210,7 @@ class Society(mesa.Model):
     # contains "real" election results and the second contains the results
     # that would have been achieved had every voter voted rationally.
     def elect(self):
+        self.ff2_issue = np.random.randint(self.num_opinions)
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
         if self.step_num % self.election_steps != 0:
             return list(real_vote_counts.values())
@@ -351,12 +381,13 @@ class Candidate(mesa.Agent):
 # at each step of the simulation, voter x may influence voter y's
 # opinion on an issue if they agree on a different issue.
 class Voter(mesa.Agent):
-    def __init__(self, unique_id, model, opinions, party, voting_algorithm):
+    def __init__(self, unique_id, model, opinions, party, voting_algorithm,
+                 ff1_issue):
         super().__init__(unique_id, model)
         self.opinions = opinions
         self.party = party
         self.voting_algorithm = voting_algorithm
-
+        self.ff1_issue = ff1_issue
     # If an agent's opinions have changed to be close enough to a different
     # party's centroid, switch that voter into the different party
     def switch_parties(self):
@@ -572,6 +603,40 @@ parser.add_argument("--sim_tag", type=str, default=None,
 
 
 
+# Threshold that determines when agents are close enough on one issue to
+# assimilate on a second issue
+openness = 0.1
+# Threshold that determines when ages are far away enough on one issue to
+# push away from each other on a second issue
+pushaway = 0.6
+# The number of opinions held by each voter and candidate
+num_opinions = 3
+# Number of nodes in the ER graph
+N = 20
+# Edge probability of the ER graph
+edge_probability = 0.5
+# Max number of the steps the simulation will run before terminating
+max_iter = 400
+# Threshold for how close voters' opinions need to be to a different party's
+# centroid in order for them to switch to that party
+party_switch_threshold = 0.2
+# Threshold that determines how far away a voter needs to be from all
+# candidates to not vote
+no_vote_threshold = pushaway
+# Number of candidates
+num_candidates = 3
+# Steps between each election
+election_steps = 50
+# Proportion of voters who will vote rationally
+frac_rational = 0.1
+# Proportion of voters who will vote for their party
+frac_party = 0.9
+# Proportion of voters who will vote using the "fast and frugal 1" algorithm
+frac_ff1 = 0.0
+# Proportion of voters who will vote using the "fast and frugal 2" algorithm
+frac_ff2 = 0.0
+# "Radius" of the hypercube in which candidates can move to chase votes
+chase_radius = 0.2
 if __name__ == "__main__":
 
     args = parser.parse_args()
