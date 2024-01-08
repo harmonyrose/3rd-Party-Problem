@@ -3,6 +3,7 @@
 import mesa
 import networkx as nx
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 import numpy as np
 import pandas as pd
 import math
@@ -306,14 +307,22 @@ class Society(mesa.Model):
     def plot(self):
         print(f"Plotting frame {self.step_num} of {self.max_iter}...")
         svecs = self.compute_SVD()
+        cmap = colormaps['Set1'].colors
         plt.clf()
         apositions = {a:(svecs[a,0],svecs[a,1]) for a in range(self.N)}
         cpositions = {c:(svecs[c,0],svecs[c,1]) for c in range(self.N, self.N +
             self.num_candidates)}
         positions = copy(apositions)
         positions.update(cpositions)
-        acolors = [ a.opinions for a in self.schedule.agents ]
-        ccolors = [[1,1,.5]]*self.num_candidates
+        if self.color_nodes == "opinion":
+            acolors = [ a.opinions for a in self.schedule.agents ]
+            ccolors = [[1,1,.5]]*self.num_candidates
+        elif self.color_nodes == "wouldVoteFor":
+            acolors = [ cmap[a.voting_algorithm(self,a).party]
+                for a in self.schedule.agents ]
+            ccolors = [ cmap[c.party] for c in self.candidates ]
+        else:
+            sys.exit("Invalid node coloring scheme.")
         colors = acolors + ccolors
         labels = { a:str(a) for a in range(self.N) }
         labels.update({ self.N + c:str(c) for c in range(self.num_candidates) })
@@ -568,6 +577,9 @@ parser.add_argument("--chase_radius", type=float, default=0.2,
     help="'Radius' of the hypercube in which candidates can chase votes")
 parser.add_argument("--animation_filename", type=str, default=None,
     help="Filename in which to store single-sim animation (if any)")
+parser.add_argument("--color_nodes", type=str, default="opinion",
+    choices=["opinion","wouldVoteFor"],
+    help="How to color nodes in single-sim animation (if any)")
 parser.add_argument("--sim_tag", type=str, default=None,
     help="A string to use as prefix to plots produced (no spaces please)")
 
