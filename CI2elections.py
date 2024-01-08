@@ -29,9 +29,9 @@ def gen_graph(N, p):
 # Returns the candidate number closest in opinion space to the agent passed.
 # (This is called voting "rationally" since it is based purely on similarity of
 # opinions, not party affiliation or any other distracting factor.)
-def rational_vote(self, voter):
+def rational_vote(society, voter):
      min_distance = 10
-     for candidate in self.candidates:
+     for candidate in society.candidates:
          distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(voter.opinions, candidate.opinions)))
          if distance < min_distance:
              min_distance = distance
@@ -39,8 +39,8 @@ def rational_vote(self, voter):
      return closest_candidate
 
 # Returns the candidate number that belongs to the same party as the voter
-def party_vote(self, voter):
-    for candidate in self.candidates:
+def party_vote(society, voter):
+    for candidate in society.candidates:
         if voter.party == candidate.party:
             return candidate
 
