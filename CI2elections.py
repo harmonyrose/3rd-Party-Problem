@@ -494,7 +494,7 @@ def plot_party_switches(party_switches, sim_tag):
     plt.close()
 
 
-def plot_rationality_over_time(batch_results, sim_tag):
+def plot_rationality_over_time(batch_results, election_steps, sim_tag):
     # Batch run
     plt.figure()
     er, rr = get_election_results(batch_results)
@@ -511,10 +511,11 @@ def plot_rationality_over_time(batch_results, sim_tag):
         np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
         capsize=5)
     plt.ylim((0,1.1))
+    plt.title(f"(Elections every {election_steps} steps)")
     if sim_tag:
-        plt.title(f"% rational election outcomes -- {sim_tag}")
+        plt.suptitle(f"% rational election outcomes -- {sim_tag}")
     else:
-        plt.title(f"% rational election outcomes")
+        plt.suptitle(f"% rational election outcomes")
     plt.savefig(f'{sim_tag}_fracRational.png')
     plt.close()
 
@@ -628,4 +629,5 @@ if __name__ == "__main__":
         # As a bonus, you also have er and rr in your environment, which gives
         # you the vote totals for all elections in all the batch runs.
 
-        plot_rationality_over_time(batch_results, args.sim_tag)
+        plot_rationality_over_time(batch_results, args.election_steps,
+            args.sim_tag)
