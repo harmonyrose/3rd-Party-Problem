@@ -46,9 +46,9 @@ def party_vote(society, voter):
         if voter.party == candidate.party:
             return candidate
 
-def ff1_vote(self, voter):
+def ff1_vote(society, voter):
     min_distance = 10
-    for candidate in self.candidates:
+    for candidate in society.candidates:
         distance = abs(candidate.opinions[voter.ff1_issue]
                        - voter.opinions[voter.ff1_issue])
         if distance < min_distance:
@@ -56,11 +56,11 @@ def ff1_vote(self, voter):
             closest_candidate = candidate
     return closest_candidate
 
-def ff2_vote(self, voter):
+def ff2_vote(society, voter):
     min_distance = 10
-    for candidate in self.candidates:
-        distance = abs(candidate.opinions[self.ff2_issue]
-                       - voter.opinions[self.ff2_issue])
+    for candidate in society.candidates:
+        distance = abs(candidate.opinions[society.ff2_issue]
+                       - voter.opinions[society.ff2_issue])
         if distance < min_distance:
             min_distance = distance
             closest_candidate = candidate
