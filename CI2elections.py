@@ -11,7 +11,7 @@ import sys
 import random
 import os
 import argparse
-import copy
+from copy import copy
 from sklearn.preprocessing import StandardScaler
 from mesa.time import RandomActivation
 from mesa.batchrunner import batch_run
@@ -147,9 +147,8 @@ class Society(mesa.Model):
 
     # Method used at initialization to determine all voters' voting algorithms
     # based on fractions specified.
-    # TODO HP: make this work for all voting algorithms.
     def determine_voting_algorithms(self):
-        voters = copy.deepcopy(self.schedule.agents)
+        voters = copy(self.schedule.agents)
         num_rational = int(self.frac_rational * self.N)
         num_party = int(self.frac_party * self.N)
         num_ff1 = int(self.frac_ff1 * self.N)
@@ -164,7 +163,7 @@ class Society(mesa.Model):
             elif voter in party_voters:
                 voter.voting_algorithm = party_vote
             elif voter in ff1_voters:
-                voter.voting_algortihm = ff1_vote
+                voter.voting_algorithm = ff1_vote
             else:
                 voter.voting_algorithm = ff2_vote
 
