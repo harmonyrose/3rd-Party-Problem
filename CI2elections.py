@@ -114,7 +114,8 @@ class Society(mesa.Model):
         # candidate's opinion vector. (TODO Issue #1)
         for i in range(self.num_candidates):
             newCandidate = Candidate(i, self,
-                list(np.random.uniform(0,1,self.num_opinions)), i)
+                list(np.random.uniform(0,1,self.num_opinions)), i,
+                self.chase_radius if i < self.num_chasers else 0)
             self.party_centroids[i] = newCandidate.opinions
             self.candidates.append(newCandidate)
 
@@ -244,9 +245,14 @@ class Society(mesa.Model):
         optimal_opinions = {candidate.unique_id: [] for candidate in self.candidates}
         for candidate in self.candidates:
             # creates an array that essentially acts as the diameter of the
-            # chase_space where the points are spaced out by 0.05
-            num_points = int(self.chase_radius * 40) + 1
-            chase_diameter = np.linspace((-1 * self.chase_radius), self.chase_radius, num_points)
+            # chase_space
+            if math.isclose(candidate.chase_radius,0):
+                num_points = 0
+                chase_diameter = np.array([0.0])
+            else:
+                num_points = int(candidate.chase_radius * 40) + 1
+                chase_diameter = np.linspace((-1 * candidate.chase_radius),
+                    candidate.chase_radius, num_points)
 
             # Generate the Cartesian product of num_opinions copies of the
             # chase_diameter. This gives us an iterator of tuples, each of size
@@ -377,10 +383,11 @@ class Society(mesa.Model):
 
 # Represents a candidate of a given party, who has its own array of opinions.
 class Candidate(mesa.Agent):
-    def __init__(self, unique_id, model, opinions, party):
+    def __init__(self, unique_id, model, opinions, party, chase_radius):
         super().__init__(unique_id, model)
         self.opinions = opinions
         self.party = party
+        self.chase_radius = chase_radius
     # Note: we can't have Candidates .step() themselves because they need to
     #   make their chase decisions synchronously, based on where each of them
     #   were in opinion space last election.
@@ -605,6 +612,8 @@ parser.add_argument("--frac_ff2", type=float, default=0.1,
     help="Proportion of voters who will use the 'fast & frugal 2' voting alg")
 parser.add_argument("--chase_radius", type=float, default=0.2,
     help="'Radius' of the hypercube in which candidates can chase votes")
+parser.add_argument("--num_chasers", type=float, default=sys.maxsize,
+    help="The number of candidates who will chase voters (others stay put)")
 parser.add_argument("--animation_filename", type=str, default=None,
     help="Filename in which to store single-sim animation (if any)")
 parser.add_argument("--color_nodes", type=str, default="opinion",
