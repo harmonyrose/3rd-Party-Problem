@@ -3,6 +3,7 @@
 import mesa
 import networkx as nx
 import matplotlib.pyplot as plt
+import seaborn as sns
 from matplotlib import colormaps
 import numpy as np
 import pandas as pd
@@ -569,6 +570,26 @@ def plot_rationality_over_time(batch_results, election_steps, sim_tag):
     plt.savefig(f'{sim_tag}_fracRational.png')
     plt.close()
 
+def plot_winners_over_time(batch_results, election_steps, sim_tag):
+    # Batch run
+    plt.figure()
+    er, _ = get_election_results(batch_results)
+    compute_winners(er, args.num_candidates)
+    cand_wins = er.groupby('elec_num').winner.value_counts()
+    cand_wins = pd.DataFrame(cand_wins).reset_index()
+    num_voters = cand_wins[cand_wins.elec_num==1]['count'].sum()
+    cand_wins['% wins'] = cand_wins['count'] / num_voters * 100
+    sns.catplot(x="elec_num", y="% wins", hue="winner",
+        data=cand_wins, kind="bar", palette="Set1")
+    plt.ylim((0,min(cand_wins['% wins'].max()+10,110)))
+    if sim_tag:
+        plt.suptitle(f"% election wins by candidate -- {sim_tag}")
+    else:
+        plt.suptitle(f"% election wins by candidate")
+    #plt.tight_layout()
+    plt.savefig(f'{sim_tag}_winners.png')
+    plt.close()
+
 def compute_winners(results, num_candidates):
     """
     Given a DataFrame that has, possibly among other columns, integer-named
@@ -685,4 +706,6 @@ if __name__ == "__main__":
         # you the vote totals for all elections in all the batch runs.
 
         plot_rationality_over_time(batch_results, args.election_steps,
+            args.sim_tag)
+        bob = plot_winners_over_time(batch_results, args.election_steps,
             args.sim_tag)
