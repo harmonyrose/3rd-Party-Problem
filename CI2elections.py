@@ -615,40 +615,6 @@ parser.add_argument("--sim_tag", type=str, default=None,
 
 
 
-# Threshold that determines when agents are close enough on one issue to
-# assimilate on a second issue
-openness = 0.1
-# Threshold that determines when ages are far away enough on one issue to
-# push away from each other on a second issue
-pushaway = 0.6
-# The number of opinions held by each voter and candidate
-num_opinions = 3
-# Number of nodes in the ER graph
-N = 20
-# Edge probability of the ER graph
-edge_probability = 0.5
-# Max number of the steps the simulation will run before terminating
-max_iter = 400
-# Threshold for how close voters' opinions need to be to a different party's
-# centroid in order for them to switch to that party
-party_switch_threshold = 0.2
-# Threshold that determines how far away a voter needs to be from all
-# candidates to not vote
-no_vote_threshold = pushaway
-# Number of candidates
-num_candidates = 3
-# Steps between each election
-election_steps = 50
-# Proportion of voters who will vote rationally
-frac_rational = 0.1
-# Proportion of voters who will vote for their party
-frac_party = 0.9
-# Proportion of voters who will vote using the "fast and frugal 1" algorithm
-frac_ff1 = 0.0
-# Proportion of voters who will vote using the "fast and frugal 2" algorithm
-frac_ff2 = 0.0
-# "Radius" of the hypercube in which candidates can move to chase votes
-chase_radius = 0.2
 if __name__ == "__main__":
 
     args = parser.parse_args()
