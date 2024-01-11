@@ -376,7 +376,7 @@ class Society(mesa.Model):
         plt.xlim((-1.2,1.2))
         plt.ylim((-1.2,1.2))
         plt.title(f"Time {self.step_num} of {self.max_iter}")
-        plt.savefig(f"{self.sim_tag}_output{self.step_num:03}.png")
+        plt.savefig(f"{self.sim_tag}_output{self.step_num:03}.png", dpi=300)
         plt.close()
 
     def make_anim(self, filename="CI2.gif"):
@@ -528,7 +528,7 @@ def plot_election_outcomes(results, sim_tag):
     axrr.set_xlabel(
         f"Election number (one per {len(results) // len(er)} iterations)")
     plt.tight_layout()
-    plt.savefig(f"{sim_tag}_election_outcomes.png")
+    plt.savefig(f"{sim_tag}_election_outcomes.png", dpi=300)
     plt.close()
 
 
@@ -541,7 +541,7 @@ def plot_party_switches(party_switches, sim_tag):
     plt.xlabel("Simulation step")
     plt.ylabel("# voters who switched parties")
     plt.tight_layout()
-    plt.savefig(f"{sim_tag}_party_switches.png")
+    plt.savefig(f"{sim_tag}_party_switches.png", dpi=300)
     plt.close()
 
 
@@ -567,7 +567,7 @@ def plot_rationality_over_time(batch_results, election_steps, sim_tag):
         plt.suptitle(f"% rational election outcomes -- {sim_tag}")
     else:
         plt.suptitle(f"% rational election outcomes")
-    plt.savefig(f'{sim_tag}_fracRational.png')
+    plt.savefig(f'{sim_tag}_fracRational.png', dpi=300)
     plt.close()
 
 def plot_winners_over_time(batch_results, election_steps, sim_tag):
@@ -587,7 +587,7 @@ def plot_winners_over_time(batch_results, election_steps, sim_tag):
     else:
         plt.suptitle(f"% election wins by candidate")
     #plt.tight_layout()
-    plt.savefig(f'{sim_tag}_winners.png')
+    plt.savefig(f'{sim_tag}_winners.png', dpi=300)
     plt.close()
 
 def compute_winners(results, num_candidates):
