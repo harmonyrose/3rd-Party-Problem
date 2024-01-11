@@ -149,7 +149,8 @@ class Society(mesa.Model):
         self.datacollector = DataCollector(
             agent_reporters={},
             model_reporters={"rational_results": Society.rational_elect,
-                             "election_results": Society.elect},
+                             "election_results": Society.elect,
+                             "chase_distances": Society.get_chase_dists},
             tables={
                 "party_switches": ["agent_id","old_party","new_party","iter"],
                 "zero_votes": ["party","iter"]
@@ -233,9 +234,24 @@ class Society(mesa.Model):
 
         # chase after election
         new_opinions = self.chase()
+
+        # Store the chase distances in an inst var, for retrieval in later
+        # call to model reporter "get_chase_dists()"; any other way seems
+        # clunkier.  -SD
+        self.chase_dists = {}
         for candidate in self.candidates:
-            candidate.opinions = list(new_opinions[candidate.unique_id])
-        return list(real_vote_counts.values())
+            self.chase_dists[candidate.party] = \
+                dist(candidate.opinions, new_opinions[candidate.party])
+            candidate.opinions = new_opinions[candidate.unique_id]
+        return np.array(list(real_vote_counts.values()))
+
+    def get_chase_dists(self):
+        # These should have been computed by the immediately preceding call
+        # to .elect() (via the "election_results" model reporter.)
+        if self.step_num % self.election_steps != 0:
+            # Not time to run an election. Go back to sleep.
+            return [0] * len(self.candidates)
+        return list(self.chase_dists.values())
 
     # See comments on .elect(). All is the same, except that .rational_elect()
     # disregards voting algorithm, always using rational_vote() instead. Also,
@@ -256,34 +272,23 @@ class Society(mesa.Model):
     def chase(self):
         optimal_opinions = {candidate.unique_id: [] for candidate in self.candidates}
         for candidate in self.candidates:
-            # creates an array that essentially acts as the diameter of the
-            # chase_space
-            if math.isclose(candidate.chase_radius,0):
-                num_points = 0
-                chase_diameter = np.array([0.0])
-            else:
-                num_points = int(candidate.chase_radius * 40) + 1
-                chase_diameter = np.linspace((-1 * candidate.chase_radius),
-                    candidate.chase_radius, num_points)
+            num_points = int(candidate.chase_radius * 40) + 1
+            chase_spectrum = np.linspace((-1 * candidate.chase_radius),
+                candidate.chase_radius, num_points)
 
             # Generate the Cartesian product of num_opinions copies of the
-            # chase_diameter. This gives us an iterator of tuples, each of size
+            # chase_spectrum. This gives us an iterator of tuples, each of size
             # num_opinions, that represents a possible delta-shift (in opinion
             # space) that this candidate will consider moving to in order to
             # get more votes.
-            chase_deltas = product(chase_diameter, repeat=len(candidate.opinions))
-            # Initialize an empty list to store all the opinion vectors this
-            # candidate will consider.
-            chase_space = []
-            for chase_point in chase_deltas:
-                # calculate neighboring arrays based on party centroid
-                chase_space_points = np.array(self.party_centroids[candidate.party]) + np.array(chase_point)
-                chase_space.append(chase_space_points)
+            chase_deltas = product(chase_spectrum,
+                repeat=len(candidate.opinions))
+            chase_space_points = [ tuple(np.array(candidate.opinions) + delta)
+                for delta in chase_deltas ]
 
             # Store all these possible opinion vectors in a dictionary, so we
             # can store this candidate's vote totals for each one.
-            chase_space_tuples = [tuple(arr) for arr in chase_space]
-            vote_counts = {t: 0 for t in chase_space_tuples}
+            vote_counts = {p: 0 for p in chase_space_points}
 
             # Store the candidate's current (original) opinions, before making
             # any of these hypothetical choices.
@@ -293,37 +298,28 @@ class Society(mesa.Model):
                 for voter in self.schedule.agents:
                     chosen_candidate = rational_vote(self, voter)
                     if chosen_candidate == candidate:
-                        vote_counts[t] += 1
+                        vote_counts[p] += 1
 
-            # if the candidate got 0 votes, pick a random opinion array, given it is between 0-1
+            # if the candidate got 0 votes no matter where it probed, just
+            # a random one to move to.
             if max(vote_counts.values()) == 0:
                 self.datacollector.add_table_row("zero_votes",
                     { 'party': candidate.party,
                     'iter': self.step_num })
-                for key in vote_counts:
-                    if all(0 <= value <= 1 for value in key):
-                        max_key = key
-                        max_key_list = list(max_key)
-                        break
+                best_chase_point = np.array(list(vote_counts.keys()))[
+                    np.random.randint(len(vote_counts))]
+
             # if the candidate got more than 0 votes, retrieve the key (opinions) corresponding
             # to the max vote count. if any of the opinions are outside the 0-1 range, clip
             # them back to 0 or 1
             else:
-                max_key = max(vote_counts, key=lambda k: vote_counts[k])
-                max_key_list = list(max_key)
-
-                for i in range(len(max_key_list)):
-                    if max_key_list[i] < 0:
-                        max_key_list[i] = 0.0
-                    elif max_key_list[i] > 1:
-                        max_key_list[i] = 1.0
+                best_chase_point = np.array(max(vote_counts,
+                    key=lambda k: vote_counts[k])).clip(0,1)
 
             # store the optimal opinions and set the candidate's opinions back to
             # what they were originally
-            clipped_max_key = tuple(max_key_list)
-            clipped_max_key = list(clipped_max_key)
-            optimal_opinions[candidate.unique_id] = clipped_max_key
             candidate.opinions = original_opinions
+            optimal_opinions[candidate.unique_id] = best_chase_point
         return optimal_opinions
 
     # Compute the dimensionality-reduced version of the agent opinion matrix,
@@ -462,11 +458,12 @@ class Voter(mesa.Agent):
 
 def get_election_results(results):
     """
-    Given a results DataFrame from a single or batch run, extract the
-    candidate vote totals by election number and produce two DataFrames of
-    results: one for actual, and one for rational, elections.
+    Given a results DataFrame from a single or batch run, produce three
+    DataFrames of results, with one row per election number: candidate vote
+    totals for actual elections, candidate vote totals for rational elections,
+    and candidate chase distances.
 
-    Input: for single runs, results should look like this:
+    Input: for single runs, results should look like: (same for chase dists)
         rational_results election_results
     0          [0, 0, 0]        [0, 0, 0]    # <- all 0's because no election
     1          [0, 0, 0]        [0, 0, 0]    # was run at any of these times
@@ -475,7 +472,7 @@ def get_election_results(results):
     49        [19, 0, 1]       [16, 4, 0]    # <- ah! an actual election
     ...
 
-    For batch runs, results should look like this:
+    For batch runs, results should look like: (same for chase dists)
         RunId   rational_results election_results
     0       0          [0, 0, 0]        [0, 0, 0]
     1       0          [0, 0, 0]        [0, 0, 0]
@@ -485,21 +482,20 @@ def get_election_results(results):
     ...
 
 
-    Output: for single runs, each of the two DataFrames will look like this:
+    Output: for single runs, each of the three DataFrames will look like this:
         0   1   2
     0  16   4   0
     1   1  17   2
     2   3  17   0
     ...
-
-    For batch runs, each of the two DataFrames will look like this:
-
     """
     # Ugliest code ever? Candidate...
     er = results['election_results']
     rr = results['rational_results']
+    cd = results['chase_distances']
     er = pd.DataFrame.from_dict(dict(zip(er.index,er.values))).transpose()
     rr = pd.DataFrame.from_dict(dict(zip(rr.index,rr.values))).transpose()
+    cd = pd.DataFrame.from_dict(dict(zip(cd.index,cd.values))).transpose()
     election_times = er.sum(axis=1) > 0
     if 'RunId' in results:
         # Batch run
@@ -509,20 +505,23 @@ def get_election_results(results):
                                         # the afterlife
         er = pd.concat([runId_step,er],axis=1)
         rr = pd.concat([runId_step,rr],axis=1)
+        cd = pd.concat([runId_step,cd],axis=1)
     er = er[election_times].reset_index(drop=True)
     rr = rr[election_times].reset_index(drop=True)
+    cd = cd[election_times].reset_index(drop=True)
     if 'RunId' in results:
         # Batch run
         elec_num = er.Step / er.Step.min()
         elec_num = elec_num.astype(int)
         er['elec_num'] = elec_num
         rr['elec_num'] = elec_num
-    return er, rr
+        cd['elec_num'] = elec_num
+    return er, rr, cd
 
 def plot_election_outcomes(results, sim_tag):
     # Single run
     fig = plt.figure()
-    er, rr = get_election_results(results)
+    er, rr, _ = get_election_results(results)
     axer = fig.add_subplot(211)
     axrr = fig.add_subplot(212)
     axer.title.set_text("Actual election results")
@@ -551,10 +550,10 @@ def plot_party_switches(party_switches, sim_tag):
     plt.close()
 
 
-def plot_rationality_over_time(batch_results, election_steps, sim_tag):
+def plot_rationality_over_time(batch_results):
     # Batch run
     plt.figure()
-    er, rr = get_election_results(batch_results)
+    er, rr, _ = get_election_results(batch_results)
     compute_winners(er, args.num_candidates)
     compute_winners(rr, args.num_candidates)
     er['rational'] = er.winner == rr.winner
@@ -568,18 +567,18 @@ def plot_rationality_over_time(batch_results, election_steps, sim_tag):
         np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
         capsize=5)
     plt.ylim((0,1.1))
-    plt.title(f"(Elections every {election_steps} steps)")
-    if sim_tag:
-        plt.suptitle(f"% rational election outcomes -- {sim_tag}")
+    plt.title(f"(Elections every {args.election_steps} steps)")
+    if args.sim_tag:
+        plt.suptitle(f"% rational election outcomes -- {args.sim_tag}")
     else:
         plt.suptitle(f"% rational election outcomes")
-    plt.savefig(f'{sim_tag}_fracRational.png', dpi=300)
+    plt.savefig(f'{args.sim_tag}_fracRational.png', dpi=300)
     plt.close()
 
-def plot_winners_over_time(batch_results, election_steps, sim_tag):
+def plot_winners_over_time(batch_results):
     # Batch run
     plt.figure()
-    er, _ = get_election_results(batch_results)
+    er, _, _ = get_election_results(batch_results)
     compute_winners(er, args.num_candidates)
     cand_wins = er.groupby('elec_num').winner.value_counts()
     cand_wins = pd.DataFrame(cand_wins).reset_index()
@@ -588,12 +587,31 @@ def plot_winners_over_time(batch_results, election_steps, sim_tag):
     sns.catplot(x="elec_num", y="% wins", hue="winner",
         data=cand_wins, kind="bar", palette="Set1")
     plt.ylim((0,min(cand_wins['% wins'].max()+10,110)))
-    if sim_tag:
-        plt.suptitle(f"% election wins by candidate -- {sim_tag}")
+    if args.sim_tag:
+        plt.suptitle(f"% election wins by candidate -- {args.sim_tag}")
     else:
         plt.suptitle(f"% election wins by candidate")
     #plt.tight_layout()
-    plt.savefig(f'{sim_tag}_winners.png', dpi=300)
+    plt.savefig(f'{args.sim_tag}_winners.png', dpi=300)
+    plt.close()
+
+def plot_chase_dists(batch_results):
+    # Batch run
+    plt.figure()
+    _, _, cd = get_election_results(batch_results)
+    cols = {}
+    for party in range(args.num_candidates):
+        line_title = f'Candidate {party} '
+        line_title += "(chaser)" if party < args.num_chasers else "(non)"
+        cols[line_title] = cd.groupby('elec_num')[party].mean()
+    chase_dists = pd.DataFrame(cols)
+    chase_dists.plot(kind="line")
+    if args.sim_tag:
+        plt.suptitle(f"Mean candidate chase distance by election -- {args.sim_tag}")
+    else:
+        plt.suptitle(f"Mean candidate chase distance by election")
+    ##plt.tight_layout()
+    plt.savefig(f'{args.sim_tag}_chase_dists.png', dpi=300)
     plt.close()
 
 def compute_winners(results, num_candidates):
@@ -702,7 +720,7 @@ if __name__ == "__main__":
         )
 
         batch_results = pd.DataFrame(batch_results)
-        er, rr = get_election_results(batch_results)
+        er, rr, cd = get_election_results(batch_results)
 
         # You now have batch_results in your environment. For example, you
         # could do:
@@ -710,10 +728,10 @@ if __name__ == "__main__":
         # to see the results of the first simulation in the suite, at time=0.
         # (See other columns in batch_results to explain what each line
         # signifies.)
-        # As a bonus, you also have er and rr in your environment, which gives
-        # you the vote totals for all elections in all the batch runs.
+        # As a bonus, you also have er, rr, and cd in your environment, which
+        # gives you the vote totals for all elections in all the batch runs,
+        # and the chase distances.
 
-        plot_rationality_over_time(batch_results, args.election_steps,
-            args.sim_tag)
-        plot_winners_over_time(batch_results, args.election_steps,
-            args.sim_tag)
+        plot_rationality_over_time(batch_results)
+        plot_winners_over_time(batch_results)
+        plot_chase_dists(batch_results)
