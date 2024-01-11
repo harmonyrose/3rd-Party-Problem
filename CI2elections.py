@@ -208,9 +208,7 @@ class Society(mesa.Model):
     # after votes are tabulated, have each candidate strategically chase()
     # towards a new opinion vector that will get them the most votes.
     #
-    # Returns two lists of vote counts, order by candidate number: the first
-    # contains "real" election results and the second contains the results
-    # that would have been achieved had every voter voted rationally.
+    # Returns a list of vote counts, ordered by candidate number.
     def elect(self):
         self.ff2_issue = np.random.randint(self.num_opinions)
         real_vote_counts = {candidate.unique_id: 0 for candidate in self.candidates}
@@ -707,5 +705,5 @@ if __name__ == "__main__":
 
         plot_rationality_over_time(batch_results, args.election_steps,
             args.sim_tag)
-        bob = plot_winners_over_time(batch_results, args.election_steps,
+        plot_winners_over_time(batch_results, args.election_steps,
             args.sim_tag)
