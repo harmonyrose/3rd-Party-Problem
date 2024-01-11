@@ -19,6 +19,16 @@ from mesa.batchrunner import batch_run
 from mesa.datacollection import DataCollector
 from itertools import product
 
+
+def dist(x, y):
+    """
+    Return the Euclidean distance between two points, represented as NumPy
+    arrays.
+    """
+    assert type(x) is np.ndarray
+    assert type(y) is np.ndarray
+    return np.sqrt(((x - y)**2).sum())
+
 # generates an erdos renyi graph with N nodes and p edge probability.
 # if the graph is not connected, a new graph is generated until a
 # connected one is obtained.
@@ -28,18 +38,17 @@ def gen_graph(N, p):
         graph = nx.erdos_renyi_graph(N,p)
     return graph
 
-
 # Returns the candidate number closest in opinion space to the agent passed.
 # (This is called voting "rationally" since it is based purely on similarity of
 # opinions, not party affiliation or any other distracting factor.)
 def rational_vote(society, voter):
-     min_distance = 10
-     for candidate in society.candidates:
-         distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(voter.opinions, candidate.opinions)))
-         if distance < min_distance:
-             min_distance = distance
-             closest_candidate = candidate
-     return closest_candidate
+    min_distance = 10
+    for candidate in society.candidates:
+        distance = dist(voter.opinions, candidate.opinions)
+        if distance < min_distance:
+            min_distance = distance
+            closest_candidate = candidate
+    return closest_candidate
 
 # Returns the candidate number that belongs to the same party as the voter
 def party_vote(society, voter):
@@ -66,7 +75,7 @@ def ff2_vote(society, voter):
             min_distance = distance
             closest_candidate = candidate
     return closest_candidate
-    
+
 # An agent-based model of a society with N voters and num_candidates political
 # candidates for office. Other constructor parameters:
 # p - probability of social connection between any two voters
@@ -115,7 +124,7 @@ class Society(mesa.Model):
         # candidate's opinion vector. (TODO Issue #1)
         for i in range(self.num_candidates):
             newCandidate = Candidate(i, self,
-                list(np.random.uniform(0,1,self.num_opinions)), i,
+                np.random.uniform(0,1,self.num_opinions), i,
                 self.chase_radius if i < self.num_chasers else 0)
             self.party_centroids[i] = newCandidate.opinions
             self.candidates.append(newCandidate)
@@ -124,12 +133,12 @@ class Society(mesa.Model):
         # (candidate; see above) it is closest to in Euclidean opinion space.
         for i in range(self.N):
             newVoter = Voter(i, self,
-                list(np.random.uniform(0,1,self.num_opinions)), 0, rational_vote, 
+                np.random.uniform(0,1,self.num_opinions), 0, rational_vote,
                 np.random.randint(self.num_opinions))
             min_distance = 100
             closest_party = -1
             for party in self.party_centroids:
-                distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(newVoter.opinions, self.party_centroids[party])))
+                distance = dist(newVoter.opinions, self.party_centroids[party])
                 if distance < min_distance:
                     min_distance = distance
                     closest_party = party
@@ -183,7 +192,7 @@ class Society(mesa.Model):
     # (re-)compute the centroid opinion for each party.
     def recompute_centroids(self):
         for party in self.party_centroids:
-            new_centroid = [0] * self.num_opinions
+            new_centroid = np.zeros(self.num_opinions)
             party_members = 0
             for voter in self.schedule.agents:
                 if voter.party == party:
@@ -278,9 +287,9 @@ class Society(mesa.Model):
 
             # Store the candidate's current (original) opinions, before making
             # any of these hypothetical choices.
-            original_opinions = candidate.opinions
-            for t in chase_space_tuples:
-                candidate.opinions = t
+            original_opinions = copy(candidate.opinions)
+            for p in chase_space_points:
+                candidate.opinions = np.array(p)
                 for voter in self.schedule.agents:
                     chosen_candidate = rational_vote(self, voter)
                     if chosen_candidate == candidate:
@@ -343,7 +352,6 @@ class Society(mesa.Model):
 
     # Plot a 2-d approximation of the agents (in reduced opinion space).
     def plot(self):
-        print(f"Plotting frame {self.step_num} of {self.max_iter}...")
         svecs = self.compute_SVD()
         cmap = colormaps['Set1'].colors
         plt.clf()
@@ -412,7 +420,7 @@ class Voter(mesa.Agent):
         min_distance = 100
         closest_party = -1
         for party in self.model.party_centroids:
-            distance = math.sqrt(sum((x - y) ** 2 for x, y in zip(self.opinions, self.model.party_centroids[party])))
+            distance = dist(self.opinions, self.model.party_centroids[party])
             if distance < min_distance:
                 min_distance = distance
                 closest_party = party
@@ -650,6 +658,8 @@ parser.add_argument("--sim_tag", type=str, default=None,
 if __name__ == "__main__":
 
     args = parser.parse_args()
+
+    np.set_printoptions(precision=4)
 
     do_anim = (args.num_sims == 1 and args.animation_filename)
 
