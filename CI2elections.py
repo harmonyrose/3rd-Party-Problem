@@ -147,13 +147,16 @@ class Society(mesa.Model):
             self.schedule.add(newVoter)
         self.determine_voting_algorithms()
         self.datacollector = DataCollector(
-            agent_reporters={},
+            agent_reporters={"drift_type":"most_recent_drift_type",
+                             "drift_dist":"most_recent_drift_dist",
+                             "party":"party"},
             model_reporters={"rational_results": Society.rational_elect,
                              "election_results": Society.elect,
                              "chase_distances": Society.get_chase_dists},
             tables={
                 "party_switches": ["agent_id","old_party","new_party","iter"],
-                "zero_votes": ["party","iter"]
+                "zero_votes": ["party","iter"],
+                "drifts": ["agent_id","party","type","iter","dist"]
             }
         )
 
@@ -410,6 +413,8 @@ class Voter(mesa.Agent):
         self.party = party
         self.voting_algorithm = voting_algorithm
         self.ff1_issue = ff1_issue
+        self.most_recent_drift_type = None
+        self.most_recent_drift_dist = 0.0
     # If an agent's opinions have changed to be close enough to a different
     # party's centroid, switch that voter into the different party
     def switch_parties(self):
@@ -428,6 +433,8 @@ class Voter(mesa.Agent):
             self.party = closest_party
 
     def step(self):
+        self.most_recent_drift_type = None
+        self.most_recent_drift_dist = 0.0
         # Implements the CI2 influence algorithm.
         # retreives x's neighbors and chooses one at random, y.
         nbrs = list(self.model.graph.neighbors(self.unique_id))
@@ -443,14 +450,20 @@ class Voter(mesa.Agent):
         # if x and y agree on i1, then x's opinion on i2 will move
         # closer to y's opinion on i2
         if diff <= self.model.openness:
+            curr_op = self.opinions[i2]
             self.opinions[i2] = (self.opinions[i2] + neighbor.opinions[i2])/2
+            self.most_recent_drift_type = "pull"
+            self.most_recent_drift_dist = abs(curr_op - self.opinions[i2])
         # if x and y strongly disagree on i1, then x's opinion on i2 will move
         # further from y's opinion on i2
         elif diff >= self.model.pushaway:
+            curr_op = self.opinions[i2]
             if self.opinions[i2] < neighbor.opinions[i2]:
                 self.opinions[i2] -= ((self.opinions[i2]) / 2)
             else:
                 self.opinions[i2] += ((1-self.opinions[i2])/ 2)
+            self.most_recent_drift_type = "push"
+            self.most_recent_drift_dist = abs(curr_op - self.opinions[i2])
         # switch parties if party-switching criteria is met
         self.switch_parties()
         self.model.recompute_centroids()
@@ -614,6 +627,23 @@ def plot_chase_dists(batch_results):
     plt.savefig(f'{args.sim_tag}_chase_dists.png', dpi=300)
     plt.close()
 
+def plot_drifts(batch_results):
+    # Batch run
+    d = batch_results[["Step","drift_type","drift_dist","party"]]
+    by_step = d.groupby(["drift_type","Step"]).drift_dist.sum().reset_index()
+    for t, c in zip(["pull","push"],["blue","red"]):
+        subset = by_step[by_step.drift_type==t]
+        plt.gca().plot(subset.Step, subset.drift_dist, color=c, label=t)
+    if args.sim_tag:
+        plt.suptitle(f"Average push/pull dist over time -- {args.sim_tag}")
+    else:
+        plt.suptitle(f"Average push/pull dist over time")
+    plt.xlabel("Simulation step")
+    plt.ylabel("Average push/pull over all agents")
+    plt.gca().legend(loc="upper right")
+    plt.savefig(f'{args.sim_tag}_drifts.png', dpi=300)
+    plt.close()
+
 def compute_winners(results, num_candidates):
     """
     Given a DataFrame that has, possibly among other columns, integer-named
@@ -735,3 +765,4 @@ if __name__ == "__main__":
         plot_rationality_over_time(batch_results)
         plot_winners_over_time(batch_results)
         plot_chase_dists(batch_results)
+        plot_drifts(batch_results)
