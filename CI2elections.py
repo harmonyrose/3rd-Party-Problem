@@ -27,6 +27,7 @@ def dist(x, y):
     """
     assert type(x) is np.ndarray
     assert type(y) is np.ndarray
+    assert np.sqrt(((x - y)**2).sum()) >= 0
     return np.sqrt(((x - y)**2).sum())
 
 # generates an erdos renyi graph with N nodes and p edge probability.
@@ -45,6 +46,7 @@ def rational_vote(society, voter):
     min_distance = 10
     for candidate in society.candidates:
         distance = dist(voter.opinions, candidate.opinions)
+        assert distance < 10, f"The distance was {distance}"
         if distance < min_distance:
             min_distance = distance
             closest_candidate = candidate
@@ -299,6 +301,10 @@ class Society(mesa.Model):
             for p in chase_space_points:
                 candidate.opinions = np.array(p)
                 for voter in self.schedule.agents:
+                    # Choosing to use rational_vote instead of the voter's
+                    # individual algorithm here is a non-obvious choice, but
+                    # HP says it's backed up in the lit. And this seems easier
+                    # to defend than the other choice.
                     chosen_candidate = rational_vote(self, voter)
                     if chosen_candidate == candidate:
                         vote_counts[p] += 1
