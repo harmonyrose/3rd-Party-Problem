@@ -620,7 +620,7 @@ def plot_chase_dists(cd):
         line_title += "(chaser)" if party < args.num_chasers else "(non)"
         cols[line_title] = cd.groupby('elec_num')[party].mean()
     chase_dists = pd.DataFrame(cols)
-    chase_dists.plot(kind="line")
+    chase_dists.plot.line(color=colormaps['Set1'].colors)
     if args.sim_tag:
         plt.suptitle(f"Mean candidate chase distance by election -- {args.sim_tag}")
     else:
