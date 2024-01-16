@@ -537,10 +537,9 @@ def get_election_results(results):
         cd['elec_num'] = elec_num
     return er, rr, cd
 
-def plot_election_outcomes(results, sim_tag):
+def plot_election_outcomes(er, rr, sim_tag):
     # Single run
     fig = plt.figure()
-    er, rr, _ = get_election_results(results)
     axer = fig.add_subplot(211)
     axrr = fig.add_subplot(212)
     axer.title.set_text("Actual election results")
@@ -550,7 +549,7 @@ def plot_election_outcomes(results, sim_tag):
     axer.set_ylim((0,er.max(axis=None)*1.1))
     axrr.set_ylim((0,er.max(axis=None)*1.1))
     axrr.set_xlabel(
-        f"Election number (one per {len(results) // len(er)} iterations)")
+        f"Election number (one per {args.election_steps} iterations)")
     plt.tight_layout()
     plt.savefig(f"{sim_tag}_election_outcomes.png", dpi=300)
     plt.close()
@@ -569,10 +568,9 @@ def plot_party_switches(party_switches, sim_tag):
     plt.close()
 
 
-def plot_rationality_over_time(batch_results):
+def plot_rationality_over_time(er, rr):
     # Batch run
     plt.figure()
-    er, rr, _ = get_election_results(batch_results)
     compute_winners(er, args.num_candidates)
     compute_winners(rr, args.num_candidates)
     er['rational'] = er.winner == rr.winner
@@ -594,10 +592,9 @@ def plot_rationality_over_time(batch_results):
     plt.savefig(f'{args.sim_tag}_fracRational.png', dpi=300)
     plt.close()
 
-def plot_winners_over_time(batch_results):
+def plot_winners_over_time(er):
     # Batch run
     plt.figure()
-    er, _, _ = get_election_results(batch_results)
     compute_winners(er, args.num_candidates)
     cand_wins = er.groupby('elec_num').winner.value_counts()
     cand_wins = pd.DataFrame(cand_wins).reset_index()
@@ -614,10 +611,9 @@ def plot_winners_over_time(batch_results):
     plt.savefig(f'{args.sim_tag}_winners.png', dpi=300)
     plt.close()
 
-def plot_chase_dists(batch_results):
+def plot_chase_dists(cd):
     # Batch run
     plt.figure()
-    _, _, cd = get_election_results(batch_results)
     cols = {}
     for party in range(args.num_candidates):
         line_title = f'Candidate {party} '
@@ -768,7 +764,7 @@ if __name__ == "__main__":
         # gives you the vote totals for all elections in all the batch runs,
         # and the chase distances.
 
-        plot_rationality_over_time(batch_results)
-        plot_winners_over_time(batch_results)
-        plot_chase_dists(batch_results)
+        plot_rationality_over_time(er, rr)
+        plot_winners_over_time(er)
+        plot_chase_dists(cd)
         plot_drifts(batch_results)
