@@ -19,6 +19,7 @@ from mesa.batchrunner import batch_run
 from mesa.datacollection import DataCollector
 from itertools import product
 
+PLOT_DIR = "plots"
 
 def dist(x, y):
     """
@@ -387,7 +388,8 @@ class Society(mesa.Model):
         plt.xlim((-1.2,1.2))
         plt.ylim((-1.2,1.2))
         plt.title(f"Time {self.step_num} of {self.max_iter}")
-        plt.savefig(f"{self.sim_tag}_output{self.step_num:03}.png", dpi=300)
+        plt.savefig(os.path.join(PLOT_DIR,
+            f"{self.sim_tag}_output{self.step_num:03}.png"), dpi=300)
         plt.close()
 
     def make_anim(self, filename="CI2.gif"):
@@ -537,7 +539,7 @@ def get_election_results(results):
         cd['elec_num'] = elec_num
     return er, rr, cd
 
-def plot_election_outcomes(er, rr, sim_tag):
+def plot_election_outcomes(er, rr):
     # Single run
     fig = plt.figure()
     axer = fig.add_subplot(211)
@@ -551,11 +553,12 @@ def plot_election_outcomes(er, rr, sim_tag):
     axrr.set_xlabel(
         f"Election number (one per {args.election_steps} iterations)")
     plt.tight_layout()
-    plt.savefig(f"{sim_tag}_election_outcomes.png", dpi=300)
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_election_outcomes.png"), dpi=300)
     plt.close()
 
 
-def plot_party_switches(party_switches, sim_tag):
+def plot_party_switches(party_switches):
     # Single run
     plt.figure()
     ps_time = party_switches.value_counts('iter').sort_index()
@@ -564,7 +567,8 @@ def plot_party_switches(party_switches, sim_tag):
     plt.xlabel("Simulation step")
     plt.ylabel("# voters who switched parties")
     plt.tight_layout()
-    plt.savefig(f"{sim_tag}_party_switches.png", dpi=300)
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_party_switches.png"), dpi=300)
     plt.close()
 
 
@@ -589,7 +593,8 @@ def plot_rationality_over_time(er, rr):
         plt.suptitle(f"% rational election outcomes -- {args.sim_tag}")
     else:
         plt.suptitle(f"% rational election outcomes")
-    plt.savefig(f'{args.sim_tag}_fracRational.png', dpi=300)
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_fracRational.png"), dpi=300)
     plt.close()
 
 def plot_winners_over_time(er):
@@ -608,7 +613,8 @@ def plot_winners_over_time(er):
     else:
         plt.suptitle(f"% election wins by candidate")
     #plt.tight_layout()
-    plt.savefig(f'{args.sim_tag}_winners.png', dpi=300)
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_winners.png"), dpi=300)
     plt.close()
 
 def plot_chase_dists(cd):
@@ -626,7 +632,8 @@ def plot_chase_dists(cd):
     else:
         plt.suptitle(f"Mean candidate chase distance by election")
     ##plt.tight_layout()
-    plt.savefig(f'{args.sim_tag}_chase_dists.png', dpi=300)
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_chase_dists.png"), dpi=300)
     plt.close()
 
 def plot_drifts(batch_results):
@@ -643,7 +650,8 @@ def plot_drifts(batch_results):
     plt.xlabel("Simulation step")
     plt.ylabel("Average push/pull over all agents")
     plt.gca().legend(loc="upper right")
-    plt.savefig(f'{args.sim_tag}_drifts.png', dpi=300)
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_drifts.png"), dpi=300)
     plt.close()
 
 def compute_winners(results, num_candidates):
@@ -731,8 +739,9 @@ if __name__ == "__main__":
         # >>> single_results.iloc[0].election_results
         # to see the results at time=0.
 
-        plot_election_outcomes(single_results, args.sim_tag)
-        plot_party_switches(party_switches, args.sim_tag)
+        er, rr, cd = get_election_results(single_results)
+        plot_election_outcomes(er, rr)
+        plot_party_switches(party_switches)
         if len(zero_votes) > 0:
             mins = zero_votes.groupby('party').min()
             for m in mins.itertuples():
@@ -752,7 +761,9 @@ if __name__ == "__main__":
         )
 
         batch_results = pd.DataFrame(batch_results)
+        print("Gathering data...")
         er, rr, cd = get_election_results(batch_results)
+        print("...done.")
 
         # You now have batch_results in your environment. For example, you
         # could do:
