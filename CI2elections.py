@@ -693,7 +693,7 @@ parser.add_argument("--frac_party", type=float, default=0.333,
     help="Proportion of voters who will vote solely based on party")
 parser.add_argument("--frac_ff1", type=float, default=0.167,
     help="Proportion of voters who will use the 'fast & frugal 1' voting alg")
-parser.add_argument("--frac_ff2", type=float, default=0.166,
+parser.add_argument("--frac_ff2", type=float, default=0.167,
     help="Proportion of voters who will use the 'fast & frugal 2' voting alg")
 parser.add_argument("--chase_radius", type=float, default=0.2,
     help="'Radius' of the hypercube in which candidates can chase votes")
