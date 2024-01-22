@@ -839,8 +839,5 @@ if __name__ == "__main__":
         plot_chase_dists(cd)
         plot_drifts(batch_results)
         plot_party_sizes(batch_results)
-<<<<<<< HEAD
         plot_party_distributions(batch_results)
-=======
         #plot_party_switches(party_switches)
->>>>>>> fafeb33af04d728fe82c0405425709d45d5184b2
