@@ -683,8 +683,29 @@ def plot_party_sizes(batch_results):
     plt.savefig(os.path.join(PLOT_DIR,
         f"{args.sim_tag}_party_sizes.png"), dpi=300)
     plt.close()
-        
- 
+
+def plot_party_distributions(batch_results):  
+    # Batch run      
+     plt.figure()
+     ps = batch_results['party_sizes']
+     ps = ps.apply(np.sort, axis=0)
+     ps = pd.DataFrame.from_dict(dict(zip(ps.index,ps.values))).transpose()
+     runId_step = batch_results[['RunId','Step']]
+     runId_step.loc[:,'Step'] += 1
+     ps = pd.concat([runId_step,ps],axis=1)
+     cols = {}
+     for party in range(args.num_candidates):
+         line_title = f'Party {party}'
+         cols[line_title] = ps.groupby('Step')[party].mean()
+     party_sizes = pd.DataFrame(cols)
+     party_sizes.plot.line(color=colormaps['Set1'].colors)
+     if args.sim_tag:
+         plt.suptitle(f"Mean party distributions over time -- {args.sim_tag}")
+     else:
+         plt.suptitle(f"Mean party distributions over time")
+     plt.savefig(os.path.join(PLOT_DIR,
+         f"{args.sim_tag}_party_distributions.png"), dpi=300)
+     plt.close()
 
 def compute_winners(results, num_candidates):
     """
@@ -813,3 +834,4 @@ if __name__ == "__main__":
         plot_chase_dists(cd)
         plot_drifts(batch_results)
         plot_party_sizes(batch_results)
+        plot_party_distributions(batch_results)
