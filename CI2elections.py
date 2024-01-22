@@ -197,6 +197,11 @@ class Society(mesa.Model):
         self.schedule.step()
         if self.do_anim:
             self.plot()
+        # Hack, because Mesa provides no ability to get data frames after batch
+        # runs.
+        if self.step_num == args.max_iter:
+            psw = self.datacollector.get_table_dataframe("party_switches")
+            psw.to_csv("run_name.csv")
 
     # Based on the current opinion vectors and party assignments of all agents,
     # (re-)compute the centroid opinion for each party.
@@ -571,10 +576,10 @@ def plot_party_switches(party_switches):
     # Single run
     plt.figure()
     ps_time = party_switches.value_counts('iter').sort_index()
-    plt.plot(ps_time.index, ps_time)
-    plt.title("Number of voter party switches")
+    plt.plot(ps_time.index, ps_time / args.num_sims)
+    plt.title("Voter party switches")
     plt.xlabel("Simulation step")
-    plt.ylabel("# voters who switched parties")
+    plt.ylabel("Average # voters who switched parties")
     plt.tight_layout()
     plt.savefig(os.path.join(PLOT_DIR,
         f"{args.sim_tag}_party_switches.png"), dpi=300)
@@ -834,4 +839,8 @@ if __name__ == "__main__":
         plot_chase_dists(cd)
         plot_drifts(batch_results)
         plot_party_sizes(batch_results)
+<<<<<<< HEAD
         plot_party_distributions(batch_results)
+=======
+        #plot_party_switches(party_switches)
+>>>>>>> fafeb33af04d728fe82c0405425709d45d5184b2
