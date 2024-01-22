@@ -266,7 +266,7 @@ class Society(mesa.Model):
         party_sizes = {0: 0, 1: 0, 2: 0}
         for voter in self.schedule.agents:
             party_sizes[voter.party] += 1
-        return party_sizes
+        return np.array(list(party_sizes.values()))
 
     # See comments on .elect(). All is the same, except that .rational_elect()
     # disregards voting algorithm, always using rational_vote() instead. Also,
@@ -570,7 +570,8 @@ def plot_election_outcomes(er, rr):
 def plot_party_switches(party_switches):
     # Single run
     plt.figure()
-
+    ps_time = party_switches.value_counts('iter').sort_index()
+    plt.plot(ps_time.index, ps_time)
     plt.title("Number of voter party switches")
     plt.xlabel("Simulation step")
     plt.ylabel("# voters who switched parties")
@@ -663,9 +664,26 @@ def plot_drifts(batch_results):
 
 def plot_party_sizes(batch_results):
     # Batch run
-    #print("hello")
-    #print(batch_results)
-    return
+    plt.figure()
+    ps = batch_results['party_sizes']
+    ps = pd.DataFrame.from_dict(dict(zip(ps.index,ps.values))).transpose()
+    runId_step = batch_results[['RunId','Step']]
+    runId_step.loc[:,'Step'] += 1
+    ps = pd.concat([runId_step,ps],axis=1)
+    cols = {}
+    for party in range(args.num_candidates):
+        line_title = f'Party {party}'
+        cols[line_title] = ps.groupby('Step')[party].mean()
+    party_sizes = pd.DataFrame(cols)
+    party_sizes.plot.line(color=colormaps['Set1'].colors)
+    if args.sim_tag:
+        plt.suptitle(f"Mean party sizes over time -- {args.sim_tag}")
+    else:
+        plt.suptitle(f"Mean party sizes over time")
+    plt.savefig(os.path.join(PLOT_DIR,
+        f"{args.sim_tag}_party_sizes.png"), dpi=300)
+    plt.close()
+        
  
 
 def compute_winners(results, num_candidates):
@@ -742,7 +760,6 @@ if __name__ == "__main__":
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
         party_switches = s.datacollector.get_table_dataframe("party_switches")
-        party_sizes = s.datacollector.get_table_dataframe("party_sizes")
         zero_votes = s.datacollector.get_table_dataframe("zero_votes")
         if do_anim:
             print(f"Building animation {args.animation_filename}...")
@@ -757,6 +774,7 @@ if __name__ == "__main__":
         er, rr, cd = get_election_results(single_results)
         plot_election_outcomes(er, rr)
         plot_party_switches(party_switches)
+
         if len(zero_votes) > 0:
             mins = zero_votes.groupby('party').min()
             for m in mins.itertuples():
