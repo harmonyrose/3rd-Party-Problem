@@ -155,9 +155,11 @@ class Society(mesa.Model):
                              "party":"party"},
             model_reporters={"rational_results": Society.rational_elect,
                              "election_results": Society.elect,
-                             "chase_distances": Society.get_chase_dists},
+                             "chase_distances": Society.get_chase_dists,
+                             "party_sizes": Society.get_party_sizes},
             tables={
                 "party_switches": ["agent_id","old_party","new_party","iter"],
+                "party_sizes":["party", "member_count", "iter"],
                 "zero_votes": ["party","iter"],
                 "drifts": ["agent_id","party","type","iter","dist"]
             }
@@ -190,6 +192,7 @@ class Society(mesa.Model):
         self.step_num += 1
         # TODO Issue #12
         #if self.step_num % self.election_steps == 0:
+        self.get_party_sizes()
         self.datacollector.collect(self)
         self.schedule.step()
         if self.do_anim:
@@ -258,6 +261,12 @@ class Society(mesa.Model):
             # Not time to run an election. Go back to sleep.
             return [0] * len(self.candidates)
         return list(self.chase_dists.values())
+    
+    def get_party_sizes(self):
+        party_sizes = {0: 0, 1: 0, 2: 0}
+        for voter in self.schedule.agents:
+            party_sizes[voter.party] += 1
+        return party_sizes
 
     # See comments on .elect(). All is the same, except that .rational_elect()
     # disregards voting algorithm, always using rational_vote() instead. Also,
@@ -561,8 +570,7 @@ def plot_election_outcomes(er, rr):
 def plot_party_switches(party_switches):
     # Single run
     plt.figure()
-    ps_time = party_switches.value_counts('iter').sort_index()
-    plt.plot(ps_time.index, ps_time)
+
     plt.title("Number of voter party switches")
     plt.xlabel("Simulation step")
     plt.ylabel("# voters who switched parties")
@@ -570,7 +578,6 @@ def plot_party_switches(party_switches):
     plt.savefig(os.path.join(PLOT_DIR,
         f"{args.sim_tag}_party_switches.png"), dpi=300)
     plt.close()
-
 
 def plot_rationality_over_time(er, rr):
     # Batch run
@@ -654,6 +661,13 @@ def plot_drifts(batch_results):
         f"{args.sim_tag}_drifts.png"), dpi=300)
     plt.close()
 
+def plot_party_sizes(batch_results):
+    # Batch run
+    #print("hello")
+    #print(batch_results)
+    return
+ 
+
 def compute_winners(results, num_candidates):
     """
     Given a DataFrame that has, possibly among other columns, integer-named
@@ -728,6 +742,7 @@ if __name__ == "__main__":
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
         party_switches = s.datacollector.get_table_dataframe("party_switches")
+        party_sizes = s.datacollector.get_table_dataframe("party_sizes")
         zero_votes = s.datacollector.get_table_dataframe("zero_votes")
         if do_anim:
             print(f"Building animation {args.animation_filename}...")
@@ -779,3 +794,4 @@ if __name__ == "__main__":
         plot_winners_over_time(er)
         plot_chase_dists(cd)
         plot_drifts(batch_results)
+        plot_party_sizes(batch_results)
