@@ -701,7 +701,8 @@ def plot_party_sizes(batch_results):
     if args.sim_tag:
         plt.suptitle(f"Mean party sizes over time -- {args.sim_tag}")
     else:
-        plt.suptitle(f"Mean party sizes over time")
+        plt.suptitle("Mean party sizes over time")
+    plt.ylim(0, args.N)   
     plt.savefig(os.path.join(PLOT_DIR,
         f"{args.sim_tag}_party_sizes.png"), dpi=300)
     plt.close()
@@ -717,14 +718,20 @@ def plot_party_distributions(batch_results):
      ps = pd.concat([runId_step,ps],axis=1)
      cols = {}
      for party in range(args.num_candidates):
-         line_title = f'Party {party}'
+         if party == 0:
+             line_title = 'Smallest party'
+         elif party == args.num_candidates-1:
+             line_title = 'Largest party'
+         else:
+             line_title = 'Middle party'
          cols[line_title] = ps.groupby('Step')[party].mean()
      party_sizes = pd.DataFrame(cols)
      party_sizes.plot.line(color=colormaps['Set1'].colors)
      if args.sim_tag:
          plt.suptitle(f"Mean party distributions over time -- {args.sim_tag}")
      else:
-         plt.suptitle(f"Mean party distributions over time")
+         plt.suptitle("Mean party distributions over time")
+     plt.ylim(0, args.N)   
      plt.savefig(os.path.join(PLOT_DIR,
          f"{args.sim_tag}_party_distributions.png"), dpi=300)
      plt.close()
@@ -857,9 +864,9 @@ if __name__ == "__main__":
         # gives you the vote totals for all elections in all the batch runs,
         # and the chase distances.
 
-        plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
+        #plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
         plot_winners_over_time(er)
-        plot_chase_dists(cd, list(sweep_vars.keys()))
+        #plot_chase_dists(cd, list(sweep_vars.keys()))
         plot_drifts(batch_results)
         plot_party_sizes(batch_results)
         plot_party_distributions(batch_results)
