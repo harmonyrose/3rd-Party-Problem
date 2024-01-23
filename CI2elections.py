@@ -97,10 +97,11 @@ def ff2_vote(society, voter):
 # election_steps -- hold an election every this number of steps
 # do_anim -- create single-sim animation?
 class Society(mesa.Model):
-    def __init__(self, args, do_anim=False):
+    def __init__(self, args, **sweep_args):
 
         super().__init__()
         self.__dict__.update(vars(args))
+        self.__dict__.update(sweep_args)
         self.graph = gen_graph(self.N, self.edge_probability)
 
         # If N is 50 and num_candidates is 3, then agents 0, 1, etc are nodes
@@ -120,7 +121,7 @@ class Society(mesa.Model):
             (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
             f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
 
-        self.do_anim = do_anim
+        self.do_anim = False
 
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
@@ -197,11 +198,6 @@ class Society(mesa.Model):
         self.schedule.step()
         if self.do_anim:
             self.plot()
-        # Hack, because Mesa provides no ability to get data frames after batch
-        # runs.
-        if self.step_num == args.max_iter:
-            psw = self.datacollector.get_table_dataframe("party_switches")
-            psw.to_csv("run_name.csv")
 
     # Based on the current opinion vectors and party assignments of all agents,
     # (re-)compute the centroid opinion for each party.
@@ -491,7 +487,7 @@ class Voter(mesa.Agent):
         self.model.recompute_centroids()
 
 
-def get_election_results(results):
+def get_election_results(results, extraIVs=[]):
     """
     Given a results DataFrame from a single or batch run, produce three
     DataFrames of results, with one row per election number: candidate vote
@@ -534,13 +530,13 @@ def get_election_results(results):
     election_times = er.sum(axis=1) > 0
     if 'RunId' in results:
         # Batch run
-        runId_step = results[['RunId','Step']]
-        runId_step.loc[:,'Step'] += 1   # this is a sin, aligning iterations
+        otherInfo = results[['RunId','Step'] + extraIVs]
+        otherInfo.loc[:,'Step'] += 1   # this is a sin, aligning iterations
                                         # this way, and I will pay for it in
                                         # the afterlife
-        er = pd.concat([runId_step,er],axis=1)
-        rr = pd.concat([runId_step,rr],axis=1)
-        cd = pd.concat([runId_step,cd],axis=1)
+        er = pd.concat([otherInfo,er],axis=1)
+        rr = pd.concat([otherInfo,rr],axis=1)
+        cd = pd.concat([otherInfo,cd],axis=1)
     er = er[election_times].reset_index(drop=True)
     rr = rr[election_times].reset_index(drop=True)
     cd = cd[election_times].reset_index(drop=True)
@@ -585,30 +581,41 @@ def plot_party_switches(party_switches):
         f"{args.sim_tag}_party_switches.png"), dpi=300)
     plt.close()
 
-def plot_rationality_over_time(er, rr):
+def convert_vals_to_display(extraIVs, extraIVvals):
+    return "_".join([ f"{var}={val}"
+        for var, val in zip(extraIVs, extraIVvals) ])
+    
+def plot_rationality_over_time(er, rr, extraIVs):
     # Batch run
-    plt.figure()
-    compute_winners(er, args.num_candidates)
-    compute_winners(rr, args.num_candidates)
-    er['rational'] = er.winner == rr.winner
-    frac_rational_by_elec_num = (er[['elec_num','rational']].groupby(
-        'elec_num').mean('rational') * 1).rational
-    # Plot error bars to 95% confidence interval
-    ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
-        (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
-    frac_rational_by_elec_num.plot(kind='bar',
-        yerr=np.c_[np.minimum(frac_rational_by_elec_num,ci),
-        np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
-        capsize=5)
-    plt.ylim((0,1.1))
-    plt.title(f"(Elections every {args.election_steps} steps)")
-    if args.sim_tag:
-        plt.suptitle(f"% rational election outcomes -- {args.sim_tag}")
-    else:
-        plt.suptitle(f"% rational election outcomes")
-    plt.savefig(os.path.join(PLOT_DIR,
-        f"{args.sim_tag}_fracRational.png"), dpi=300)
-    plt.close()
+    # For now, assume only one (or zero) extra IV
+    extraIVvals = er[extraIVs[0]].unique()
+    for eivv in extraIVvals:
+        er2 = copy(er[er[extraIVs[0]] == eivv])
+        rr2 = copy(rr[rr[extraIVs[0]] == eivv])
+        plt.figure()
+        compute_winners(er2, args.num_candidates)
+        compute_winners(rr2, args.num_candidates)
+        er2['rational'] = er2.winner == rr2.winner
+        frac_rational_by_elec_num = (er2[['elec_num','rational']].groupby(
+            'elec_num').mean('rational') * 1).rational
+        # Plot error bars to 95% confidence interval
+        ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
+            (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
+        frac_rational_by_elec_num.plot(kind='bar',
+            yerr=np.c_[np.minimum(frac_rational_by_elec_num,ci),
+            np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
+            capsize=5)
+        plt.ylim((0,1.1))
+        plt.title(f"(Elections every {args.election_steps} steps)")
+        extra_disp = convert_vals_to_display(extraIVs,[eivv])
+        if args.sim_tag:
+            plt.suptitle(f"% rational election outcomes -- {args.sim_tag}"
+                f"({extra_disp})")
+        else:
+            plt.suptitle(f"% rational election outcomes ({extra_disp})")
+        plt.savefig(os.path.join(PLOT_DIR,
+            f"{args.sim_tag}_{extra_disp}_fracRational.png"), dpi=300)
+        plt.close()
 
 def plot_winners_over_time(er):
     # Batch run
@@ -630,24 +637,34 @@ def plot_winners_over_time(er):
         f"{args.sim_tag}_winners.png"), dpi=300)
     plt.close()
 
-def plot_chase_dists(cd):
+def plot_chase_dists(cd, extraIVs):
     # Batch run
-    plt.figure()
-    cols = {}
-    for party in range(args.num_candidates):
-        line_title = f'Candidate {party} '
-        line_title += "(chaser)" if party < args.num_chasers else "(non)"
-        cols[line_title] = cd.groupby('elec_num')[party].mean()
-    chase_dists = pd.DataFrame(cols)
-    chase_dists.plot.line(color=colormaps['Set1'].colors)
-    if args.sim_tag:
-        plt.suptitle(f"Mean candidate chase distance by election -- {args.sim_tag}")
-    else:
-        plt.suptitle(f"Mean candidate chase distance by election")
-    ##plt.tight_layout()
-    plt.savefig(os.path.join(PLOT_DIR,
-        f"{args.sim_tag}_chase_dists.png"), dpi=300)
-    plt.close()
+    # For now, assume only one (or zero) extra IV
+    extraIVvals = er[extraIVs[0]].unique()
+    for eivv in extraIVvals:
+        plt.figure()
+        cols = {}
+        import ipdb; ipdb.set_trace()
+        num_chasers = args.num_chasers
+        if 'num_chasers' in extraIVs:
+            num_chasers = eivv
+        
+        for party in range(args.num_candidates):
+            line_title = f'Candidate {party} '
+            line_title += "(chaser)" if party < num_chasers else "(non)"
+            cols[line_title] = cd.groupby('elec_num')[party].mean()
+        chase_dists = pd.DataFrame(cols)
+        chase_dists.plot.line(color=colormaps['Set1'].colors)
+        extra_disp = convert_vals_to_display(extraIVs,[eivv])
+        if args.sim_tag:
+            plt.suptitle(f"Mean candidate chase distance by election "
+                f"-- {args.sim_tag} ({extra_disp})")
+        else:
+            plt.suptitle(f"Mean candidate chase distance by election "
+                f"({extra_disp})")
+        plt.savefig(os.path.join(PLOT_DIR,
+            f"{args.sim_tag}_{extra_disp}_chase_dists.png"), dpi=300)
+        plt.close()
 
 def plot_drifts(batch_results):
     # Batch run
@@ -759,7 +776,7 @@ parser.add_argument("--frac_ff2", type=float, default=0.167,
     help="Proportion of voters who will use the 'fast & frugal 2' voting alg")
 parser.add_argument("--chase_radius", type=float, default=0.2,
     help="'Radius' of the hypercube in which candidates can chase votes")
-parser.add_argument("--num_chasers", type=float, default=sys.maxsize,
+parser.add_argument("--num_chasers", type=int, nargs="+", default=sys.maxsize,
     help="The number of candidates who will chase voters (others stay put)")
 parser.add_argument("--animation_filename", type=str, default=None,
     help="Filename in which to store single-sim animation (if any)")
@@ -778,10 +795,11 @@ if __name__ == "__main__":
     np.set_printoptions(precision=4)
 
     do_anim = (args.num_sims == 1 and args.animation_filename)
+    do_anim = False  # temporarily turn this off
 
     if args.num_sims == 1:
         # Single run.
-        s = Society(args, do_anim)
+        s = Society(args)
         for i in range(args.max_iter):
             s.step()
         single_results = s.datacollector.get_model_vars_dataframe()
@@ -811,8 +829,12 @@ if __name__ == "__main__":
 
     else:
 
+        sweep_vars = { var : val for var, val in vars(args).items()
+            if type(val) is list }
+        params = copy(sweep_vars)
+        params.update({ 'args': args })
         batch_results = batch_run(Society,
-            parameters={ 'args': args },
+            parameters=params,
             iterations=args.num_sims,
             max_steps=args.max_iter,
             number_processes=None,     # make this 1 to use only one CPU
@@ -821,7 +843,8 @@ if __name__ == "__main__":
 
         batch_results = pd.DataFrame(batch_results)
         print("Gathering data...")
-        er, rr, cd = get_election_results(batch_results)
+        er, rr, cd = get_election_results(batch_results,
+            list(sweep_vars.keys()))
         print("...done.")
 
         # You now have batch_results in your environment. For example, you
@@ -834,9 +857,9 @@ if __name__ == "__main__":
         # gives you the vote totals for all elections in all the batch runs,
         # and the chase distances.
 
-        plot_rationality_over_time(er, rr)
+        plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
         plot_winners_over_time(er)
-        plot_chase_dists(cd)
+        plot_chase_dists(cd, list(sweep_vars.keys()))
         plot_drifts(batch_results)
         plot_party_sizes(batch_results)
         plot_party_distributions(batch_results)
