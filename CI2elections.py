@@ -150,6 +150,7 @@ class Society(mesa.Model):
             self.voters.append(newVoter)
             self.schedule.add(newVoter)
         self.determine_voting_algorithms()
+        self.recompute_centroids()
         self.datacollector = DataCollector(
             agent_reporters={"drift_type":"most_recent_drift_type",
                              "drift_dist":"most_recent_drift_dist",
