@@ -589,15 +589,13 @@ def convert_vals_to_display(extraIVs, extraIVvals):
 def plot_rationality_over_time(er, rr, extraIVs):
     # Batch run
     # For now, assume only one (or zero) extra IV
-    extraIVvals = er[extraIVs[0]].unique()
-    for eivv in extraIVvals:
-        er2 = copy(er[er[extraIVs[0]] == eivv])
-        rr2 = copy(rr[rr[extraIVs[0]] == eivv])
+
+    def plot_helper(er, rr, msg):
         plt.figure()
-        compute_winners(er2, args.num_candidates)
-        compute_winners(rr2, args.num_candidates)
-        er2['rational'] = er2.winner == rr2.winner
-        frac_rational_by_elec_num = (er2[['elec_num','rational']].groupby(
+        compute_winners(er, args.num_candidates)
+        compute_winners(rr, args.num_candidates)
+        er['rational'] = er.winner == rr.winner
+        frac_rational_by_elec_num = (er[['elec_num','rational']].groupby(
             'elec_num').mean('rational') * 1).rational
         # Plot error bars to 95% confidence interval
         ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
@@ -608,15 +606,24 @@ def plot_rationality_over_time(er, rr, extraIVs):
             capsize=5)
         plt.ylim((0,1.1))
         plt.title(f"(Elections every {args.election_steps} steps)")
-        extra_disp = convert_vals_to_display(extraIVs,[eivv])
         if args.sim_tag:
             plt.suptitle(f"% rational election outcomes -- {args.sim_tag}"
-                f"({extra_disp})")
+                f"({msg})")
         else:
-            plt.suptitle(f"% rational election outcomes ({extra_disp})")
+            plt.suptitle(f"% rational election outcomes ({msg})")
         plt.savefig(os.path.join(PLOT_DIR,
-            f"{args.sim_tag}_{extra_disp}_fracRational.png"), dpi=300)
+            f"{args.sim_tag}_{msg}_fracRational.png"), dpi=300)
         plt.close()
+
+    if len(extraIVs) == 0:
+        plot_helper(er, rr, "")
+    else:
+        extraIVvals = er[extraIVs[0]].unique()
+        for eivv in extraIVvals:
+            er2 = copy(er[er[extraIVs[0]] == eivv])
+            rr2 = copy(rr[rr[extraIVs[0]] == eivv])
+            plot_helper(er2, rr2, convert_vals_to_display(extraIVs, [eivv]))
+
 
 def plot_winners_over_time(er):
     # Batch run
@@ -645,7 +652,6 @@ def plot_chase_dists(cd, extraIVs):
     for eivv in extraIVvals:
         plt.figure()
         cols = {}
-        import ipdb; ipdb.set_trace()
         num_chasers = args.num_chasers
         if 'num_chasers' in extraIVs:
             num_chasers = eivv
@@ -865,7 +871,7 @@ if __name__ == "__main__":
         # gives you the vote totals for all elections in all the batch runs,
         # and the chase distances.
 
-        #plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
+        plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
         plot_winners_over_time(er)
         #plot_chase_dists(cd, list(sweep_vars.keys()))
         plot_drifts(batch_results)
