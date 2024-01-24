@@ -659,30 +659,37 @@ def plot_winners_over_time(er, extraIVs):
 def plot_chase_dists(cd, extraIVs):
     # Batch run
     # For now, assume only one (or zero) extra IV
-    extraIVvals = er[extraIVs[0]].unique()
-    for eivv in extraIVvals:
+
+    def plot_helper(cd, num_chasers, msg):
         plt.figure()
         cols = {}
-        num_chasers = args.num_chasers
-        if 'num_chasers' in extraIVs:
-            num_chasers = eivv
-        
         for party in range(args.num_candidates):
             line_title = f'Candidate {party} '
             line_title += "(chaser)" if party < num_chasers else "(non)"
             cols[line_title] = cd.groupby('elec_num')[party].mean()
         chase_dists = pd.DataFrame(cols)
         chase_dists.plot.line(color=colormaps['Set1'].colors)
-        extra_disp = convert_vals_to_display(extraIVs,[eivv])
         if args.sim_tag:
             plt.suptitle(f"Mean candidate chase distance by election "
-                f"-- {args.sim_tag} ({extra_disp})")
+                f"-- {args.sim_tag} ({msg})")
         else:
             plt.suptitle(f"Mean candidate chase distance by election "
-                f"({extra_disp})")
+                f"({msg})")
         plt.savefig(os.path.join(PLOT_DIR,
-            f"{args.sim_tag}_{extra_disp}_chase_dists.png"), dpi=300)
+            f"{args.sim_tag}_{msg}_chase_dists.png"), dpi=300)
         plt.close()
+
+    if len(extraIVs) == 0:
+        plot_helper(cd, args.num_chasers, "")
+    else:
+        extraIVvals = cd[extraIVs[0]].unique()
+        for eivv in extraIVvals:
+            cd2 = copy(cd[cd[extraIVs[0]] == eivv])
+            if extraIVs[0] == "num_chasers":
+                plot_helper(cd2,eivv,convert_vals_to_display(extraIVs, [eivv]))
+            else:
+                plot_helper(cd2,args.num_chaser,
+                    convert_vals_to_display(extraIVs, [eivv]))
 
 def plot_drifts(batch_results):
     # Batch run
@@ -884,7 +891,7 @@ if __name__ == "__main__":
 
         plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
         plot_winners_over_time(er, list(sweep_vars.keys()))
-        #plot_chase_dists(cd, list(sweep_vars.keys()))
+        plot_chase_dists(cd, list(sweep_vars.keys()))
         plot_drifts(batch_results)
         plot_party_sizes(batch_results)
         plot_party_distributions(batch_results)
