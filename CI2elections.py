@@ -691,23 +691,35 @@ def plot_chase_dists(cd, extraIVs):
                 plot_helper(cd2,args.num_chaser,
                     convert_vals_to_display(extraIVs, [eivv]))
 
-def plot_drifts(batch_results):
+def plot_drifts(batch_results, extraIVs):
     # Batch run
-    d = batch_results[["Step","drift_type","drift_dist","party"]]
-    by_step = d.groupby(["drift_type","Step"]).drift_dist.sum().reset_index()
-    for t, c in zip(["pull","push"],["blue","red"]):
-        subset = by_step[by_step.drift_type==t]
-        plt.gca().plot(subset.Step, subset.drift_dist, color=c, label=t)
-    if args.sim_tag:
-        plt.suptitle(f"Average push/pull dist over time -- {args.sim_tag}")
+
+    def plot_helper(d, msg):
+        by_step = d.groupby(["drift_type","Step"]) \
+            .drift_dist.sum().reset_index()
+        for t, c in zip(["pull","push"],["blue","red"]):
+            subset = by_step[by_step.drift_type==t]
+            plt.gca().plot(subset.Step, subset.drift_dist, color=c, label=t)
+        if args.sim_tag:
+            plt.suptitle(f"Average push/pull dist over time -- {args.sim_tag}"
+                f" ({msg})")
+        else:
+            plt.suptitle(f"Average push/pull dist over time ({msg})")
+        plt.xlabel("Simulation step")
+        plt.ylabel("Average push/pull over all agents")
+        plt.gca().legend(loc="upper right")
+        plt.savefig(os.path.join(PLOT_DIR,
+            f"{args.sim_tag}_{msg}_drifts.png"), dpi=300)
+        plt.close()
+
+    d = batch_results[["Step","drift_type","drift_dist","party"] + extraIVs]
+    if len(extraIVs) == 0:
+        plot_helper(d, "")
     else:
-        plt.suptitle(f"Average push/pull dist over time")
-    plt.xlabel("Simulation step")
-    plt.ylabel("Average push/pull over all agents")
-    plt.gca().legend(loc="upper right")
-    plt.savefig(os.path.join(PLOT_DIR,
-        f"{args.sim_tag}_drifts.png"), dpi=300)
-    plt.close()
+        extraIVvals = cd[extraIVs[0]].unique()
+        for eivv in extraIVvals:
+            d2 = copy(d[d[extraIVs[0]] == eivv])
+            plot_helper(d2, convert_vals_to_display(extraIVs, [eivv]))
 
 def plot_party_sizes(batch_results):
     # Batch run
@@ -892,7 +904,7 @@ if __name__ == "__main__":
         plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
         plot_winners_over_time(er, list(sweep_vars.keys()))
         plot_chase_dists(cd, list(sweep_vars.keys()))
-        plot_drifts(batch_results)
+        plot_drifts(batch_results, list(sweep_vars.keys()))
         plot_party_sizes(batch_results)
         plot_party_distributions(batch_results)
         #plot_party_switches(party_switches)
