@@ -697,9 +697,10 @@ def plot_drifts(batch_results, extraIVs):
     def plot_helper(d, msg):
         by_step = d.groupby(["drift_type","Step"]) \
             .drift_dist.sum().reset_index()
+        by_step['norm_drift_dist'] = by_step.drift_dist / args.num_sims
         for t, c in zip(["pull","push"],["blue","red"]):
             subset = by_step[by_step.drift_type==t]
-            plt.gca().plot(subset.Step, subset.drift_dist, color=c, label=t)
+            plt.gca().plot(subset.Step,subset.norm_drift_dist,color=c,label=t)
         if args.sim_tag:
             plt.suptitle(f"Average push/pull dist over time -- {args.sim_tag}"
                 f" ({msg})")
