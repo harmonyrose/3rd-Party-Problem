@@ -11,3 +11,4 @@ other stuff)
 * Polls: every n clock ticks, a certain fraction of the electorate is "polled" and those numbers made public, and now voters can use those numbers to decide which candidates are viable.
 * There is an algorithm (or set of algorithms) for a voter to choose whether to vote.
 
+# test bizon
