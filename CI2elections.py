@@ -127,6 +127,8 @@ class Society(mesa.Model):
         # party's "centroid" to be not actually its centroid of voters, but its
         # candidate's opinion vector. (TODO Issue #1)
         for i in range(self.num_candidates):
+            assert type(self.num_chasers) is int,\
+                f"num_chasers is {type(self.num_chasers)} ({self.num_chasers})"
             newCandidate = Candidate(i, self,
                 np.random.uniform(0,1,self.num_opinions), i,
                 self.chase_radius if i < self.num_chasers else 0)
@@ -844,6 +846,11 @@ if __name__ == "__main__":
 
     if args.num_sims == 1:
         # Single run.
+        # Since not a batch run, convert all "lists of size one" arguments
+        #   into their single value.
+        for arg in vars(args):
+            if type(vars(args)[arg]) is list:
+                vars(args)[arg] = vars(args)[arg][0]
         s = Society(args)
         for i in range(args.max_iter):
             s.step()
