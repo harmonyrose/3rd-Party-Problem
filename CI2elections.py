@@ -630,15 +630,21 @@ def plot_rationality_over_time(er, rr, extraIVs):
 def plot_winners_over_time(er, extraIVs):
     # Batch run
 
-    def plot_helper(er, msg):
+    def plot_helper(er, num_chasers, msg):
         plt.figure()
         compute_winners(er, args.num_candidates)
         cand_wins = er.groupby('elec_num').winner.value_counts()
         cand_wins = pd.DataFrame(cand_wins).reset_index()
         num_voters = cand_wins[cand_wins.elec_num==1]['count'].sum()
         cand_wins['% wins'] = cand_wins['count'] / num_voters * 100
-        sns.catplot(x="elec_num", y="% wins", hue="winner",
-            data=cand_wins, kind="bar", palette="Set1")
+        p = sns.catplot(x="elec_num", y="% wins", hue="winner",
+            data=cand_wins, kind="bar", palette="Set1",
+            legend_out=True)
+        new_labels = [f"{c} (chaser)"
+            if c < num_chasers else f"{c} (non)"
+            for c in range(args.num_candidates)]
+        for t, l in zip(p._legend.texts, new_labels):
+            t.set_text(l)
         plt.ylim((0,min(cand_wins['% wins'].max()+10,110)))
         if args.sim_tag:
             plt.suptitle(f"% election wins by candidate -- {args.sim_tag}"
@@ -651,12 +657,17 @@ def plot_winners_over_time(er, extraIVs):
         plt.close()
 
     if len(extraIVs) == 0:
-        plot_helper(er, "")
+        plot_helper(er, args.num_chasers, "")
     else:
         extraIVvals = er[extraIVs[0]].unique()
         for eivv in extraIVvals:
             er2 = copy(er[er[extraIVs[0]] == eivv])
-            plot_helper(er2, convert_vals_to_display(extraIVs, [eivv]))
+            if extraIVs[0] == "num_chasers":
+                plot_helper(er2,eivv,convert_vals_to_display(extraIVs, [eivv]))
+            else:
+                plot_helper(er2,args.num_chaser,
+                    convert_vals_to_display(extraIVs, [eivv]))
+
 
 def plot_chase_dists(cd, extraIVs):
     # Batch run
