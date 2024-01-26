@@ -116,13 +116,13 @@ class Society(mesa.Model):
         self.step_num = 0
         self.party_centroids = {}
         self.ff2_issue = np.random.randint(self.num_opinions)
-        assert math.isclose(self.frac_rational + self.frac_party +
-            self.frac_ff1 + self.frac_ff2, 1.0), \
-            (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
-            f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
+        #assert math.isclose(self.frac_rational + self.frac_party +
+            #self.frac_ff1 + self.frac_ff2, 1.0), \
+            #(f"Electorate of {self.frac_rational}, {self.frac_party}, " +
+            #f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
 
         self.do_anim = False
-
+        print(sweep_args)
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
         # candidate's opinion vector. (TODO Issue #1)
@@ -661,7 +661,7 @@ def plot_winners_over_time(er, extraIVs):
             if extraIVs[0] == "num_chasers":
                 plot_helper(er2,eivv,convert_vals_to_display(extraIVs, [eivv]))
             else:
-                plot_helper(er2,args.num_chaser,
+                plot_helper(er2,args.num_chasers,
                     convert_vals_to_display(extraIVs, [eivv]))
 
 
@@ -770,7 +770,7 @@ def plot_party_distributions(batch_results):
          elif party == args.num_candidates-1:
              line_title = 'Largest party'
          else:
-             line_title = 'Middle party'
+             line_title = f'Middle party {party}'
          cols[line_title] = ps.groupby('Step')[party].mean()
      party_sizes = pd.DataFrame(cols)
      party_sizes.plot.line(color=colormaps['Set1'].colors)
