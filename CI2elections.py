@@ -267,7 +267,7 @@ class Society(mesa.Model):
         return list(self.chase_dists.values())
     
     def get_party_sizes(self):
-        party_sizes = {0: 0, 1: 0, 2: 0}
+        party_sizes = {candidate.party: 0 for candidate in self.candidates}
         for voter in self.schedule.agents:
             party_sizes[voter.party] += 1
         return np.array(list(party_sizes.values()))
@@ -817,20 +817,20 @@ parser.add_argument("--num_candidates", type=int, default=3,
     help="Number of candidates")
 parser.add_argument("--edge_probability", type=float, default=0.2,
     help="Edge probability of the ER graph")
-parser.add_argument("--max_iter", type=int, default=400,
+parser.add_argument("--max_iter", type=int, default=300,
     help="Max number of the steps the simulation will run before terminating")
 parser.add_argument("--party_switch_threshold", type=float, default=0.2,
     help="Threshold for how close voters' opinions need to be to a different "
         "party's # centroid in order for them to switch to that party")
 parser.add_argument("--election_steps", type=int, default=50,
     help="Steps between each election")
-parser.add_argument("--frac_rational", type=float, default=0.333,
+parser.add_argument("--frac_rational", type=float, nargs="+", default=0.333,
     help="Proportion of voters who will vote rationally")
-parser.add_argument("--frac_party", type=float, default=0.333,
+parser.add_argument("--frac_party", type=float, nargs="+", default=0.333,
     help="Proportion of voters who will vote solely based on party")
-parser.add_argument("--frac_ff1", type=float, default=0.167,
+parser.add_argument("--frac_ff1", type=float, nargs="+", default=0.167,
     help="Proportion of voters who will use the 'fast & frugal 1' voting alg")
-parser.add_argument("--frac_ff2", type=float, default=0.167,
+parser.add_argument("--frac_ff2", type=float, nargs="+", default=0.167,
     help="Proportion of voters who will use the 'fast & frugal 2' voting alg")
 parser.add_argument("--chase_radius", type=float, default=0.2,
     help="'Radius' of the hypercube in which candidates can chase votes")
