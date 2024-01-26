@@ -844,7 +844,11 @@ parser.add_argument("--sim_tag", type=str, default=None,
 
 if __name__ == "__main__":
 
+    # Parse arguments and save to file for safe keeping.
     args = parser.parse_args()
+    with open(os.path.join(PLOT_DIR, f"{args.sim_tag}_args.txt"), "w") as f:
+        for param in sorted(vars(args), key=str.casefold):
+            print(f"{param} = {vars(args)[param]}", file=f)
 
     np.set_printoptions(precision=4)
 
