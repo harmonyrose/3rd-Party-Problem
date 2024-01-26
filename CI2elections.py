@@ -116,13 +116,9 @@ class Society(mesa.Model):
         self.step_num = 0
         self.party_centroids = {}
         self.ff2_issue = np.random.randint(self.num_opinions)
-        assert math.isclose(self.frac_rational + self.frac_party +
-            self.frac_ff1 + self.frac_ff2, 1.0), \
-            (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
-            f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
 
         self.do_anim = False
-        print(sweep_args)
+
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
         # candidate's opinion vector. (TODO Issue #1)
@@ -151,6 +147,32 @@ class Society(mesa.Model):
             newVoter.party = closest_party
             self.voters.append(newVoter)
             self.schedule.add(newVoter)
+            
+        # rather ugly code that checks to see if any voter strategy is being
+        # parameter sweeped, and if it is, evenly divide up the rest of the 
+        # voters into the remaining vote strategies
+        if ('frac_rational' in sweep_args):
+            self.frac_party = (1 - self.frac_rational)/2
+            self.frac_ff1 = (1 - self.frac_rational)/4
+            self.frac_ff2 = (1 - self.frac_rational)/4
+        elif ('frac_party' in sweep_args):
+            self.frac_rational = (1 - self.frac_party)/2
+            self.frac_ff1 = (1 - self.frac_party)/4
+            self.frac_ff2 = (1 - self.frac_party)/4
+        elif ('frac_ff1' in sweep_args):
+            self.frac_rational = (2*(1 - self.frac_ff1))/5
+            self.frac_party = (2*(1 - self.frac_ff1))/5
+            self.frac_ff2 = (1 - self.frac_ff1)/5
+        elif ('frac_ff2' in sweep_args):
+            self.frac_rational = (2*(1 - self.frac_ff2))/5
+            self.frac_party = (2*(1 - self.frac_ff2))/5
+            self.frac_ff1 = (1 - self.frac_ff2)/5
+            
+        assert math.isclose(self.frac_rational + self.frac_party +
+            self.frac_ff1 + self.frac_ff2, 1.0), \
+            (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
+             f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
+            
         self.determine_voting_algorithms()
         self.recompute_centroids()
         self.datacollector = DataCollector(
@@ -697,7 +719,7 @@ def plot_chase_dists(cd, extraIVs):
             if extraIVs[0] == "num_chasers":
                 plot_helper(cd2,eivv,convert_vals_to_display(extraIVs, [eivv]))
             else:
-                plot_helper(cd2,args.num_chaser,
+                plot_helper(cd2,args.num_chasers,
                     convert_vals_to_display(extraIVs, [eivv]))
 
 def plot_drifts(batch_results, extraIVs):
