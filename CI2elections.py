@@ -637,14 +637,10 @@ def plot_winners_over_time(er, extraIVs):
         cand_wins = pd.DataFrame(cand_wins).reset_index()
         num_voters = cand_wins[cand_wins.elec_num==1]['count'].sum()
         cand_wins['% wins'] = cand_wins['count'] / num_voters * 100
-        p = sns.catplot(x="elec_num", y="% wins", hue="winner",
-            data=cand_wins, kind="bar", palette="Set1",
-            legend_out=True)
-        new_labels = [f"{c} (chaser)"
-            if c < num_chasers else f"{c} (non)"
-            for c in range(args.num_candidates)]
-        for t, l in zip(p._legend.texts, new_labels):
-            t.set_text(l)
+        df = pd.pivot(cand_wins.drop('count',axis=1), index='elec_num',
+            columns='winner')
+        df.columns = [ f"Candidate {c}" for c in range(args.num_candidates) ]
+        df.plot(kind='bar',stacked=False, color=colormaps['Set1'].colors)
         plt.ylim((0,min(cand_wins['% wins'].max()+10,110)))
         if args.sim_tag:
             plt.suptitle(f"% election wins by candidate -- {args.sim_tag}"
