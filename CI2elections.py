@@ -116,10 +116,10 @@ class Society(mesa.Model):
         self.step_num = 0
         self.party_centroids = {}
         self.ff2_issue = np.random.randint(self.num_opinions)
-        #assert math.isclose(self.frac_rational + self.frac_party +
-            #self.frac_ff1 + self.frac_ff2, 1.0), \
-            #(f"Electorate of {self.frac_rational}, {self.frac_party}, " +
-            #f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
+        assert math.isclose(self.frac_rational + self.frac_party +
+            self.frac_ff1 + self.frac_ff2, 1.0), \
+            (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
+            f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
 
         self.do_anim = False
         print(sweep_args)
