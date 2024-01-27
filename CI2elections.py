@@ -876,8 +876,15 @@ parser.add_argument("--sim_tag", type=str, default=None,
 
 if __name__ == "__main__":
 
-    # Parse arguments and save to file for safe keeping.
+    # Parse arguments.
     args = parser.parse_args()
+
+    # Convert anything that's a "list of one item" to a single item.
+    for var, val in vars(args).items():
+        if type(val) is list  and  len(val) == 1:
+            vars(args)[var] = vars(args)[var][0] 
+
+    # Save parameters to file for safe keeping.
     with open(os.path.join(PLOT_DIR, f"{args.sim_tag}_args.txt"), "w") as f:
         for param in sorted(vars(args), key=str.casefold):
             print(f"{param} = {vars(args)[param]}", file=f)
@@ -925,7 +932,7 @@ if __name__ == "__main__":
     else:
 
         sweep_vars = { var : val for var, val in vars(args).items()
-            if type(val) is list }
+            if type(val) is list  and  len(val) > 1 }
         params = copy(sweep_vars)
         params.update({ 'args': args })
         batch_results = batch_run(Society,
