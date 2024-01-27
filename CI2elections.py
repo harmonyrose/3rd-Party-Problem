@@ -845,7 +845,7 @@ parser.add_argument("--num_candidates", type=int, default=3,
     help="Number of candidates")
 parser.add_argument("--edge_probability", type=float, default=0.2,
     help="Edge probability of the ER graph")
-parser.add_argument("--max_iter", type=int, default=300,
+parser.add_argument("--max_iter", type=int, default=400,
     help="Max number of the steps the simulation will run before terminating")
 parser.add_argument("--party_switch_threshold", type=float, default=0.2,
     help="Threshold for how close voters' opinions need to be to a different "
