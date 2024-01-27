@@ -918,6 +918,10 @@ if __name__ == "__main__":
         print("Gathering data...")
         er, rr, cd = get_election_results(batch_results,
             list(sweep_vars.keys()))
+        print("Saving data...")
+        for t in ['er','rr','cd']:
+            eval(t).to_csv(os.path.join(PLOT_DIR, f"{args.sim_tag}_{t}.csv"),
+                index=False)
         print("...done.")
 
         # You now have batch_results in your environment. For example, you
