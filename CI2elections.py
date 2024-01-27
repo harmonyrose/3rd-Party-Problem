@@ -122,7 +122,6 @@ class Society(mesa.Model):
             f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
 
         self.do_anim = False
-        print(sweep_args)
         # Create new random candidates, one for each party, and initialize each
         # party's "centroid" to be not actually its centroid of voters, but its
         # candidate's opinion vector. (TODO Issue #1)
