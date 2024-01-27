@@ -147,6 +147,27 @@ class Society(mesa.Model):
             self.voters.append(newVoter)
             self.schedule.add(newVoter)
             
+        self.determine_voting_algorithms(sweep_args)
+        self.recompute_centroids()
+        self.datacollector = DataCollector(
+            agent_reporters={"drift_type":"most_recent_drift_type",
+                             "drift_dist":"most_recent_drift_dist",
+                             "party":"party"},
+            model_reporters={"rational_results": Society.rational_elect,
+                             "election_results": Society.elect,
+                             "chase_distances": Society.get_chase_dists,
+                             "party_sizes": Society.get_party_sizes},
+            tables={
+                "party_switches": ["agent_id","old_party","new_party","iter"],
+                "party_sizes":["party", "member_count", "iter"],
+                "zero_votes": ["party","iter"],
+                "drifts": ["agent_id","party","type","iter","dist"]
+            }
+        )
+
+    # Method used at initialization to determine all voters' voting algorithms
+    # based on fractions specified.
+    def determine_voting_algorithms(self, sweep_args):
         # rather ugly code that checks to see if any voter strategy is being
         # parameter sweeped, and if it is, evenly divide up the rest of the 
         # voters into the remaining vote strategies
@@ -172,27 +193,6 @@ class Society(mesa.Model):
             (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
              f"{self.frac_ff1}, {self.frac_ff2} does not add up to 1.0.")
             
-        self.determine_voting_algorithms()
-        self.recompute_centroids()
-        self.datacollector = DataCollector(
-            agent_reporters={"drift_type":"most_recent_drift_type",
-                             "drift_dist":"most_recent_drift_dist",
-                             "party":"party"},
-            model_reporters={"rational_results": Society.rational_elect,
-                             "election_results": Society.elect,
-                             "chase_distances": Society.get_chase_dists,
-                             "party_sizes": Society.get_party_sizes},
-            tables={
-                "party_switches": ["agent_id","old_party","new_party","iter"],
-                "party_sizes":["party", "member_count", "iter"],
-                "zero_votes": ["party","iter"],
-                "drifts": ["agent_id","party","type","iter","dist"]
-            }
-        )
-
-    # Method used at initialization to determine all voters' voting algorithms
-    # based on fractions specified.
-    def determine_voting_algorithms(self):
         voters = copy(self.schedule.agents)
         num_rational = int(self.frac_rational * self.N)
         num_party = int(self.frac_party * self.N)
