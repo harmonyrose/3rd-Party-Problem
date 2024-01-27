@@ -635,12 +635,23 @@ def plot_winners_over_time(er, extraIVs):
         cand_wins = er.groupby('elec_num').winner.value_counts()
         cand_wins = pd.DataFrame(cand_wins).reset_index()
         num_voters = cand_wins[cand_wins.elec_num==1]['count'].sum()
-        cand_wins['% wins'] = cand_wins['count'] / num_voters * 100
+        cand_wins['prop wins'] = cand_wins['count'] / num_voters
+        cand_wins['ci'] = 1.96 * np.sqrt(cand_wins['prop wins'] * \
+            (1 - cand_wins['prop wins']) / len(cand_wins))
+        cand_wins['% wins'] = cand_wins['prop wins'] * 100
+        cand_wins.ci = cand_wins.ci * 100
         df = pd.pivot(cand_wins.drop('count',axis=1), index='elec_num',
-            columns='winner')
-        df.columns = [ f"Candidate {c}" for c in range(args.num_candidates) ]
-        df.plot(kind='bar',stacked=False, color=colormaps['Set1'].colors)
-        plt.ylim((0,min(cand_wins['% wins'].max()+10,110)))
+            columns='winner', values='% wins')
+        yerr = pd.pivot(cand_wins.drop('count',axis=1), index='elec_num',
+            columns='winner', values='ci')
+        yerr = np.minimum(yerr, 100 - df)
+        yerr = np.minimum(yerr, df)
+        df.columns = [ f"Candidate {c} "
+            f"({'chaser' if c < num_chasers else 'non'})"
+            for c in range(args.num_candidates) ]
+        yerr.columns = df.columns
+        df.plot(kind='bar',yerr=yerr,capsize=3,color=colormaps['Set1'].colors)
+        plt.ylim((0,110))
         if args.sim_tag:
             plt.suptitle(f"% election wins by candidate -- {args.sim_tag}"
                 f" ({msg})")
