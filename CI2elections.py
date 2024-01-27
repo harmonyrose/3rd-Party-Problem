@@ -592,7 +592,7 @@ def plot_election_outcomes(er, rr):
     plt.close()
 
 
-def plot_party_switches(party_switches):
+def plot_party_switches(party_switches, args):
     # Single run
     plt.figure()
     ps_time = party_switches.value_counts('iter').sort_index()
@@ -609,7 +609,7 @@ def convert_vals_to_display(extraIVs, extraIVvals):
     return "_".join([ f"{var}={val}"
         for var, val in zip(extraIVs, extraIVvals) ])
     
-def plot_rationality_over_time(er, rr, extraIVs):
+def plot_rationality_over_time(er, rr, extraIVs, args):
     # Batch run
     # For now, assume only one (or zero) extra IV
 
@@ -648,7 +648,7 @@ def plot_rationality_over_time(er, rr, extraIVs):
             plot_helper(er2, rr2, convert_vals_to_display(extraIVs, [eivv]))
 
 
-def plot_winners_over_time(er, extraIVs):
+def plot_winners_over_time(er, extraIVs, args):
     # Batch run
 
     def plot_helper(er, num_chasers, msg):
@@ -697,7 +697,7 @@ def plot_winners_over_time(er, extraIVs):
                     convert_vals_to_display(extraIVs, [eivv]))
 
 
-def plot_chase_dists(cd, extraIVs):
+def plot_chase_dists(cd, extraIVs, args):
     # Batch run
     # For now, assume only one (or zero) extra IV
 
@@ -732,7 +732,7 @@ def plot_chase_dists(cd, extraIVs):
                 plot_helper(cd2,args.num_chasers,
                     convert_vals_to_display(extraIVs, [eivv]))
 
-def plot_drifts(batch_results, extraIVs):
+def plot_drifts(batch_results, extraIVs, args):
     # Batch run
 
     def plot_helper(d, msg):
@@ -763,7 +763,7 @@ def plot_drifts(batch_results, extraIVs):
             d2 = copy(d[d[extraIVs[0]] == eivv])
             plot_helper(d2, convert_vals_to_display(extraIVs, [eivv]))
 
-def plot_party_sizes(batch_results):
+def plot_party_sizes(batch_results, args):
     # Batch run
     plt.figure()
     ps = batch_results['party_sizes']
@@ -786,7 +786,7 @@ def plot_party_sizes(batch_results):
         f"{args.sim_tag}_party_sizes.png"), dpi=300)
     plt.close()
 
-def plot_party_distributions(batch_results):  
+def plot_party_distributions(batch_results, args):
     # Batch run      
      plt.figure()
      ps = batch_results['party_sizes']
@@ -963,10 +963,10 @@ if __name__ == "__main__":
         # gives you the vote totals for all elections in all the batch runs,
         # and the chase distances.
 
-        plot_rationality_over_time(er, rr, list(sweep_vars.keys()))
-        plot_winners_over_time(er, list(sweep_vars.keys()))
-        plot_chase_dists(cd, list(sweep_vars.keys()))
-        plot_drifts(batch_results, list(sweep_vars.keys()))
-        plot_party_sizes(batch_results)
-        plot_party_distributions(batch_results)
+        plot_rationality_over_time(er, rr, list(sweep_vars.keys()), args)
+        plot_winners_over_time(er, list(sweep_vars.keys()), args)
+        plot_chase_dists(cd, list(sweep_vars.keys()), args)
+        plot_drifts(batch_results, list(sweep_vars.keys()), args)
+        plot_party_sizes(batch_results, args)
+        plot_party_distributions(batch_results, args)
         #plot_party_switches(party_switches)
