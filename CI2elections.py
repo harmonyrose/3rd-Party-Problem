@@ -187,7 +187,7 @@ class Society(mesa.Model):
             self.frac_rational = (2*(1 - self.frac_ff2))/5
             self.frac_party = (2*(1 - self.frac_ff2))/5
             self.frac_ff1 = (1 - self.frac_ff2)/5
-            
+
         assert math.isclose(self.frac_rational + self.frac_party +
             self.frac_ff1 + self.frac_ff2, 1.0), \
             (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
@@ -878,6 +878,10 @@ if __name__ == "__main__":
 
     # Parse arguments.
     args = parser.parse_args()
+    sweep_vars = { var : val for var, val in vars(args).items()
+        if type(val) is list  and  len(val) > 1 }
+    specified_vars = { var : val for var, val in vars(args).items()
+        if type(val) is list  and  len(val) == 1 }
 
     # Convert anything that's a "list of one item" to a single item.
     for var, val in vars(args).items():
@@ -931,9 +935,8 @@ if __name__ == "__main__":
 
     else:
 
-        sweep_vars = { var : val for var, val in vars(args).items()
-            if type(val) is list  and  len(val) > 1 }
         params = copy(sweep_vars)
+        params.update(specified_vars)
         params.update({ 'args': args })
         batch_results = batch_run(Society,
             parameters=params,
