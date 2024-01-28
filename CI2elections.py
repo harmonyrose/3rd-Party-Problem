@@ -188,9 +188,6 @@ class Society(mesa.Model):
             self.frac_rational = (1 - 2*self.frac_ff1)/2
             self.frac_party = self.frac_rational
 
-        print(f"Using electorate of {self.frac_rational} rational, "
-            f"{self.frac_party} party, {self.frac_ff1} FF1, "
-            f"{self.frac_ff2} FF2...")
         assert math.isclose(self.frac_rational + self.frac_party +
             self.frac_ff1 + self.frac_ff2, 1.0), \
             (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
@@ -894,6 +891,10 @@ if __name__ == "__main__":
     # Save parameters to file for safe keeping.
     with open(os.path.join(PLOT_DIR, f"{args.sim_tag}_args.txt"), "w") as f:
         for param in sorted(vars(args), key=str.casefold):
+            if param in sweep_vars or param in specified_vars:
+                print("*", file=f, end="")
+            else:
+                print(" ", file=f, end="")
             print(f"{param} = {vars(args)[param]}", file=f)
 
     np.set_printoptions(precision=4)
