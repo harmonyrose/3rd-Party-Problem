@@ -180,14 +180,17 @@ class Society(mesa.Model):
             self.frac_ff1 = (1 - self.frac_party)/4
             self.frac_ff2 = (1 - self.frac_party)/4
         elif ('frac_ff1' in sweep_args):
-            self.frac_rational = (2*(1 - self.frac_ff1))/5
-            self.frac_party = (2*(1 - self.frac_ff1))/5
-            self.frac_ff2 = (1 - self.frac_ff1)/5
+            self.frac_ff2 = self.frac_ff1
+            self.frac_rational = (1 - 2*self.frac_ff1)/2
+            self.frac_party = self.frac_rational
         elif ('frac_ff2' in sweep_args):
-            self.frac_rational = (2*(1 - self.frac_ff2))/5
-            self.frac_party = (2*(1 - self.frac_ff2))/5
-            self.frac_ff1 = (1 - self.frac_ff2)/5
+            self.frac_ff1 = self.frac_ff2
+            self.frac_rational = (1 - 2*self.frac_ff1)/2
+            self.frac_party = self.frac_rational
 
+        print(f"Using electorate of {self.frac_rational} rational, "
+            f"{self.frac_party} party, {self.frac_ff1} FF1, "
+            f"{self.frac_ff2} FF2...")
         assert math.isclose(self.frac_rational + self.frac_party +
             self.frac_ff1 + self.frac_ff2, 1.0), \
             (f"Electorate of {self.frac_rational}, {self.frac_party}, " +
