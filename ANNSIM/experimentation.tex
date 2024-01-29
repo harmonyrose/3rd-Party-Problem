@@ -2,14 +2,36 @@
 \label{sec:experimentation}
 
 \subsection{Verification}
-% 1. Verification: sanity-checking that the model works as designed **(SD)**
-%   CI2 mechanism does reach fixed point
-%      - plot 1: run "drifts" for default voting alg, 1200
-%   Candidates do chase correctly, and do stop chasing
-%      - plot 2: run "chase_dists" for default voting alg, 1200
-%      (hint at more to the story: a single chaser finds sweet spot faster)
-%   Mention that both plot 1 and 2 seem to decay at about the same rate, and
-%   approach equilibrium at about the same point.
+
+To confirm the model's basic operations, we ran it interactively with a wide
+variety of values for every parameter. We verified, among other things, that
+the CI2 mechanism does asymptote towards a fixed point as expected.
+Figure~\ref{drifts_and_chases_asymptote} (left) depicts the average amount that each
+agent's opinion was either ``pushed'' (or ``pulled'') towards an agent similar
+enough (or dissimilar enough) on the comparison issue. These drift distances
+decay over the course of about four hundred iterations until an equilibrium is
+reached. Empirically, we discovered that an \textbf{openness} parameter value
+of \textbf{.1}, and a \textbf{pushaway} of \textbf{.6}, worked well for
+producing the CI2 effect.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/drifts_asymptote.png}
+\includegraphics[width=0.45\textwidth]{assets/chase_dists_asymptote.png}
+\caption{Both voters' drift movements (due to the CI2 mechanism approaching steady
+state) and candidates' chase movements (due to all candidates reaching local
+maxima in state space) asymptote to zero.}
+\label{drifts_and_chases_asymptote}
+\end{figure}
+
+Similarly, as expected, the distances in opinion space that candidates
+traversed in ``chasing'' voters also trend downward to zero. After reaping the
+nearby ``low-hanging fruit'' (voters not locked in by any other candidate and
+thus prime for poaching), candidates face diminishing returns when chasing any
+further would jeopardize their existing voters. See
+Figure~\ref{drifts_and_chases_asymptote} (right) for an illustration with two
+chasing candidates.
+
 
 \subsection{Independent variables}
 
