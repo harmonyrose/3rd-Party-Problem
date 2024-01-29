@@ -970,10 +970,16 @@ if __name__ == "__main__":
         # gives you the vote totals for all elections in all the batch runs,
         # and the chase distances.
 
+        print("Plotting rationality...")
         plot_rationality_over_time(er, rr, list(sweep_vars.keys()), args)
+        print("Plotting winners...")
         plot_winners_over_time(er, list(sweep_vars.keys()), args)
+        print("Plotting chase distances...")
         plot_chase_dists(cd, list(sweep_vars.keys()), args)
+        print("Plotting drifts...")
         plot_drifts(batch_results, list(sweep_vars.keys()), args)
+        print("Plotting party sizes...")
         plot_party_sizes(batch_results, args)
+        print("Plotting party distros...")
         plot_party_distributions(batch_results, args)
         #plot_party_switches(party_switches)
