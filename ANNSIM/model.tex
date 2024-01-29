@@ -35,14 +35,14 @@ intervals, every $N=50$ steps, and results are tabulated to determine the winner
 
 At each election, all agents deploy one of several voting algorithms, modeling the
 discrepancies in the thinking patterns and decision-making strategies of real voters.
-Derived from the literature on voter psychology, the voting algorithms are as follows:
-\begin{enumerate}
-	\item Rational: Vote for the candidate whose opinions are closest to the voting agent's in
-	Euclidean distance.
-	\item Party-line: Vote for the candidate belonging to the same party as the voting agent.
-	\item Fast \& Frugal \#1 (F\&F1):  
-	\item Fast \& Frugal \#2 (F\&F2):
-\end{enumerate}
+Derived from the literature on voter psychology, the voting algorithms are as follows: 
+rational, party-line, fast \& frugal \#1 (F\&F1), and fast \& frugal \#2 (F\&F2).
+\\\\
+Rational agents vote for the candidate they are closest to in Euclidean space. They are an
+ideal-type voter, representing someone with perfect information and the ability to maximize 
+utility. Party-line agents vote for the candidate that belongs to the same party as them. They vote in a manner that reaffirms their identity as a party member, ignoring positions on issues. F\&F1 agents vote based solely on one "core opinion" that is randomly determined at initialization and remains their core issue through the entire simulation. F\&F2 agents vote based on one "hot topic"
+issue that changes with each election cycle. All F\&F2 voters vote for the candidate closest to them
+on the same issue. F\&F agents embody those who make a calculated trade-off between a good decision and an easy decision. They do not consider all information, only that which is most important to them, and cast their votes based on that limited information, seeing as it is "good enough".
 
 
 \subsection{Parties}
@@ -50,6 +50,8 @@ Derived from the literature on voter psychology, the voting algorithms are as fo
 %3. Parties **(HP)**
 %    1. How these are initialized, both for voters and candidates
 %    2. Whether and how voters ever change parties
+
+We initialize parties to represent each of the candidates
 
 \subsection{Candidate agents}
 
