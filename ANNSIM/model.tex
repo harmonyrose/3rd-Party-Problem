@@ -20,12 +20,9 @@
 %5. Elections **(HP)**
 %    1. At regular points in time, elections are held, and results tabulated
 
-To study the political impact of the CI2 mechanism, we introduce a simple political
-structure in which all agents deploy one of several voting strategies in regularly held elections.
-Elections are held every $N=50$ steps and results are tabulated to determine the winner, as well 
-as the rationality of the outcome. An election is considered rational if the
-winning candidate is the candidate that best represents the population
-in opinion space.
+To study the political impact of the CI2 mechanism and explore the effects of issue-based
+campaigning and voting, we introduce elections to the model. Elections are held at regular
+intervals, every $N=50$ steps, and results are tabulated to determine the winners. 
 
 \subsubsection{Voting algorithms}
 
@@ -36,6 +33,16 @@ in opinion space.
 %        * F&F2
 %        * Party-line vote
 
+At each election, all agents deploy one of several voting algorithms, modeling the
+discrepancies in the thinking patterns and decision-making strategies of real voters.
+Derived from the literature on voter psychology, the voting algorithms are as follows:
+\begin{enumerate}
+	\item Rational: Vote for the candidate whose opinions are closest to the voting agent's in
+	Euclidean distance.
+	\item Party-line: Vote for the candidate belonging to the same party as the voting agent.
+	\item Fast \& Frugal \#1 (F\&F1):  
+	\item Fast \& Frugal \#2 (F\&F2):
+\end{enumerate}
 
 
 \subsection{Parties}
