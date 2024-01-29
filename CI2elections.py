@@ -622,7 +622,7 @@ def plot_rationality_over_time(er, rr, extraIVs, args):
             'elec_num').mean('rational') * 1).rational
         # Plot error bars to 95% confidence interval
         ci = 1.96 * np.sqrt(frac_rational_by_elec_num *
-            (1 - frac_rational_by_elec_num) / len(frac_rational_by_elec_num))
+            (1 - frac_rational_by_elec_num) / args.num_sims)
         frac_rational_by_elec_num.plot(kind='bar',
             yerr=np.c_[np.minimum(frac_rational_by_elec_num,ci),
             np.minimum(ci,1-frac_rational_by_elec_num)].transpose(),
@@ -659,7 +659,7 @@ def plot_winners_over_time(er, extraIVs, args):
         num_voters = cand_wins[cand_wins.elec_num==1]['count'].sum()
         cand_wins['prop wins'] = cand_wins['count'] / num_voters
         cand_wins['ci'] = 1.96 * np.sqrt(cand_wins['prop wins'] * \
-            (1 - cand_wins['prop wins']) / len(cand_wins))
+            (1 - cand_wins['prop wins']) / args.num_sims)
         cand_wins['% wins'] = cand_wins['prop wins'] * 100
         cand_wins.ci = cand_wins.ci * 100
         df = pd.pivot(cand_wins.drop('count',axis=1), index='elec_num',
