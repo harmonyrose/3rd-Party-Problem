@@ -652,7 +652,9 @@ def plot_winners_over_time(er, extraIVs, args):
     def plot_helper(er, num_chasers, msg):
         plt.figure()
         cand_wins = er.groupby('elec_num').winner.value_counts()
-        cand_wins = pd.DataFrame(cand_wins).reset_index()
+        cand_wins = pd.DataFrame(cand_wins)
+        cand_wins.columns = ['count']
+        cand_wins = cand_wins.reset_index()
         num_voters = cand_wins[cand_wins.elec_num==1]['count'].sum()
         cand_wins['prop wins'] = cand_wins['count'] / num_voters
         cand_wins['ci'] = 1.96 * np.sqrt(cand_wins['prop wins'] * \
