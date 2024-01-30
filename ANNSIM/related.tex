@@ -1,6 +1,12 @@
 \section{Related work}
 \label{sec:related}
 
+% Key aspects of SD/HP: graph, opinion space, elections, modeling (not
+% forecasting)
+
+% Mention: our work is actually more similar with Axelrod's cultural influence
+% model than most of the election modeling stuff
+
 \subsection{Political opinions and homophily}
     1. Homophily as a near-universal driver of human behavior **(SD)**
 
@@ -74,10 +80,17 @@ voters.
 %   Hamas.")"
 
 
-\subsubsection{Modeling the elecction process}
+\subsubsection{Modeling the election process}
 %    3. Approaches to actually modeling the election process **(HP)**
 %        * note that this is different than election forecasting
 % Election forecasting
+
+Existing agent-based election models focus on the continuous dynamics of
+political systems in which all voters have fixed opinions and are assumed to 
+always support the candidate closest to them in the opinion space \cite{kollman_adaptive_1992, laver_policy_2005, lehrer_governator_2018, wright_modeling_2015}. In his formative work, Laver \cite{laver_policy_2005} studies how candidates can use different issue adjustment
+campaign strategies to gain more support. Lehrer and Schumacher \cite{lehrer_governator_2018} build upon Laver's foundation by modeling party formations and coalition governments, and more recently Wright and Sengupta \cite{wright_modeling_2015} study the impact of oligarchs on a democratic model.
+
+
 Recently, Gao \textit{et al}\cite{gao_forecasting_2022} have presented a
 promising approach to election forecasting. They combine current demographic
 attributes of the population with historical results of past election outcomes
@@ -93,17 +106,11 @@ The emotion/information/opinion (E/I/O) approach, utilized by both
 and perhaps even conditions conducive to legitimate third parties coming into
 play.
 
-% Key aspects of SD/HP: graph, opinion space, elections, modeling (not
-% forecasting)
-
-% Mention: our work is actually more similar with Axelrod's cultural influence
-% model than most of the election modeling stuff
-
 
 % Harmony's unorganized notes
 %Laver:
 %\begin{itemize}
-%\item analyzes different issue adjustment campaign strategies party leaders can use to get more support from voters. our model uses the same issue adjustmnet strategy across the board
+%\item analyzes different issue adjustment campaign strategies party leaders can use to get %more support from voters. our model uses the same issue adjustmnet strategy across the board
 %\item does not hold elections in which voters actually vote; it is assumed that voters support the leader with the closest opinions to them
 %\item voters do not interact or change their opinions
 %\item deployed model in a way to retrieve a real opinion poll series in Ireland
@@ -112,15 +119,14 @@ play.
 %\begin{itemize}
 %\item extension of Laver's model
 %\item  parties can form coalition governments
-%\item  parties have utility functions that determine how they use issue adjustment to campaign; they are motivated by office pay-offs as well as votes
-%\item they look at how different party adaption strategies can lead to opitmal voter representation in both the legislature and the government, whereas we look at how different voting algorithms can lead to optimal voter representation in the legislature
-%\item they hold elections, but all voters vote rationally whereas we explore different voting algorithms
+%\item  parties have utility functions that determine how they use issue adjustment to %campaign; they are motivated by office pay-offs as well as votes
+%\item they look at how different party adaption strategies can lead to opitmal voter %representation in both the legislature and the government, whereas we look at how %different voting algorithms can lead to optimal voter representation in the legislature
+%\item they hold elections, but all voters vote rationally whereas we explore different %voting algorithms
 %\item voters do not interact or change opinions
 %\end{itemize}
 %Wright and Sengupta:
 %\begin{itemize}
-%\item extension of Laver's model
-%\item analyzes the impact of oligarchs (that can make significant donations) on the political system
+%political system
 %\item voters do not interact or change opinions, and they all vote rationally at every step
-%\item parties campaign by issue adjustment, considering an additional "olig-salience" variable that voters possess that represents how important the special interests of the oligarchs are to them in comparison to the importance of policy positions
+%\item parties campaign by issue adjustment, considering an additional "olig-salience" %variable that voters possess that represents how important the special interests of the %oligarchs are to them in comparison to the importance of policy positions
 %\end{itemize}
