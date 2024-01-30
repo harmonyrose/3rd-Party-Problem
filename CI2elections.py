@@ -709,6 +709,7 @@ def plot_chase_dists(cd, extraIVs, args):
             cols[line_title] = cd.groupby('elec_num')[party].mean()
         chase_dists = pd.DataFrame(cols)
         chase_dists.plot.line(color=colormaps['Set1'].colors)
+        plt.ylim((0,chase_dists.max(axis=None)))
         if args.sim_tag:
             plt.suptitle(f"Mean candidate chase distance by election "
                 f"-- {args.sim_tag} ({msg})")
