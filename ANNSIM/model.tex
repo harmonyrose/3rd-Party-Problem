@@ -3,17 +3,61 @@
 
 \subsection{Overview}
 
-%1. Overall description: voters and candidates interact in opinion space **(SD)**
+An abstract \textbf{opinion space} is represented as a continuous
+$I_N$-dimensional Euclidean space, where $I_N$ is the number of issues. An
+\textbf{opinion} $O_i$ on \textbf{issue} $I_i$ is a value in the real interval
+$[0,1]$, for $1 \leq i \leq I_N$.
+
+There are two kinds of agents in the model: $C_N$ \textbf{candidates}, and
+$V_N$ \textbf{voters}. Agents of either type each have a dynamic
+\textbf{opinion vector} $(O_{i_1}, O_{i_2}, O_{i_3}, ..., O_{i_{I_N}})$
+comprising one opinion on each issue; in other words, a point in the opinion
+space.
+
+A random Erd\H{o}s-R\'{e}enyi graph\cite{erdhos_evolution_1960} is generated
+with $V_N$ nodes and uniform edge probability of $p_e$. During each iteration
+of the simulation, voters interact randomly with their graph neighbors in
+pairwise fashion, as explained below. This often results in one of the opinions
+of one voter in the pair being moved either higher or lower in the interval.
+We term this movement of voter opinions ``\textbf{drifting}.''
+
+Every $E$ (``election interval'') iterations, each candidate adjusts (within
+constraints) its opinion vector to the point in opinion space that would
+produce the maximum number of votes assuming (1) all voter agents vote
+rationally (\textit{i.e.} they will vote for the candidate whose opinion vector
+is closest to theirs in opinion space) and (2) no other candidates' opinion
+vector changes. We term this movement of candidate opinions
+``\textbf{chasing}.''
 
 \subsection{Voter agents}
 
-%2. Voter agents **(SD)**
-%    1. Modeling opinions on issues as continuous-valued vectors
-%    2. How voters choose who to interact with
-%    3. What happens at interaction -- CI2
-%         Use the terms "openness" and "pushaway"
-%         Use the terms "comparison issue" and "influenced issue"
-%    4. Turnout: an voter's decision about whether or not to vote
+At each iteration of the simulation, each agent $V_i$ (in randomly-chosen
+order) has the opportunity to be influenced according to the
+\textbf{cross-issue influence} (CI2) algorithm\cite{davies_agent-based_2023}.
+To do so, it chooses one of its graph neighbors $V_j$ at random. It also
+selects two of the $I_N$ issues, $I_c$ and $I_f$ (with $I_c \neq I_f$) as the
+\textbf{comparison issue} and the \textbf{influenced issue}, respectively.
+
+Agent $V_i$ then compares its opinion on issue $I_c$ ($O_{i_c}$) with agent
+$V_j$'s opinion on that issue ($O_{j_c}$). If $|O_{i_c} - O_{j_c}| < T_o$,
+where $T_o$ is the \textbf{openness threshold}, agent $V_i$ considers $V_j$ to
+be homophilous and therefore trustworthy. It will then move its opinion on
+$I_f$ ($O_{i_f}$) to be the average of its current value and agent $V_j$'s
+value on $I_f$ ($O_{j_f}$). (For example, suppose issue 9 is chosen as the
+comparison issue and issue 2 is chosen as the influenced issue. Then suppose
+$O_{i_9} = .2, O_{j_9} = .4$, and $T_o = .15$. Since $|O_{i_9} - O_{j_9}| = .2
+< .15$, $O_{i_2}$ will be influenced midway towards $O_{j_2}$, and settle at
+.3.)
+
+On the other hand, if $|V_i - V_j| > T_p$, where $T_p$ is the \textbf{pushaway
+threshold}, agent $V_i$ considers $V_j$ to be so dissimilar that its opinion on
+the influenced issue $T_f$ will be repelled. In this case, agent $V_i$ will
+move its opinion on $I_f$ to be midway between its current position and that of
+the pole (either 0 or 1). (For example, suppose issue 4 is chosen as the
+comparison issue and issue 5 is chosen as the influenced issue. Then suppose
+$O_{i_4} = .2, O_{j_4} = .9$, and $T_p = .6$. Since $|O_{i_4} - O_{j_4}| = .7
+> .6$, $O_{i_5}$ will be pushed away from $O_{j_5}$, and settle at .1.)
+
 
 \subsection{Elections}
 

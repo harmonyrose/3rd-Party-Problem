@@ -121,6 +121,105 @@ Severs “non-intimiate” connections between agitated agents who continually i
 	file = {Available Version (via Google Scholar):/home/stephen/snap/zotero-snap/common/Zotero/storage/QBTKMFXY/568.html:text/html;Sobkowicz_2023_Social Depolarization and Diversity of Opinions—Unified ABM Framework.pdf:/home/stephen/snap/zotero-snap/common/Zotero/storage/2VI5PYB4/Sobkowicz_2023_Social Depolarization and Diversity of Opinions—Unified ABM Framework.pdf:application/pdf},
 }
 
+@article{wright_modeling_2015,
+	title = {Modeling {Oligarchs}' {Campaign} {Donations} and {Ideological} {Preferences} with {Simulated} {Agent}-{Based} {Spatial} {Elections}},
+	volume = {18},
+	issn = {1460-7425},
+	number = {2},
+	journal = {Journal of Artificial Societies and Social Simulation},
+	author = {Wright, Mason and Sengupta, Pratim},
+	year = {2015},
+	keywords = {campaign-issueAdjustment, campaign-lastStepMemory, interaction-none, opinions-continuous, opinions-scalar, parties-two, receptivity-oligSalience, topology-none, voting-ideal},
+	pages = {3},
+	annote = {Diff from us:
+
+
+extension of Laver’s model: uses their “hunter” campaigning strategy
+
+
+analyzes the impact of lobbying oligarchs on the political system
+
+
+no elections or voting- they only look at party dynamics
+
+
+},
+	file = {Modeling Oligarchs' Campaign Donations and Ideological Preferences with Simulated Agent-Based Spatial Elections:/home/stephen/snap/zotero-snap/common/Zotero/storage/8KLHYV6C/3.html:text/html},
+}
+
+@article{laver_policy_2005,
+	title = {Policy and the {Dynamics} of {Political} {Competition}},
+	volume = {99},
+	issn = {1537-5943, 0003-0554},
+	url = {https://www.cambridge.org/core/journals/american-political-science-review/article/policy-and-the-dynamics-of-political-competition/89669AF3A2D7CA5196C72272B4AEE3BC},
+	doi = {10.1017/S0003055405051646},
+	abstract = {This paper proposes a model that takes the dynamic agent-based analysis of policy-driven party competition into a multiparty environment. In this, voters continually review party support and switch parties to increase their expectations; parties continually readapt policy positions to the shifting affiliations of voters. Different algorithms for party adaptation are explored, including “Aggregator” (adapt party policy to the ideal policy positions of party supporters), Hunter (repeat policy moves that were rewarded; otherwise make random moves), Predator (move party policy toward the policy position of the largest party), and “Sticker” (never change party policy). Strong trends in the behavior of parties using different methods of adaptation are explored. The model is then applied in a series of experiments to the dynamics of a real party system, described in a published opinion poll time series. This paper reports first steps toward endogenizing key features of the process, including the birth and death of parties, internal party decision rules, and voter ideal points.},
+	language = {en},
+	number = {2},
+	urldate = {2023-12-15},
+	journal = {American Political Science Review},
+	author = {Laver, Michael},
+	month = may,
+	year = {2005},
+	note = {Publisher: Cambridge University Press},
+	keywords = {campaign-issueAdjustment, interaction-none, opinions-discrete, opinions-vector, parties-multiple, receptivity-none, topology-none, voting-ideal},
+	pages = {263--281},
+	annote = {Diff from us
+
+
+looks at the continuous dynamics of political competition with no regard for elections or voting, only measures “party support” over time
+
+
+analyzes different strategies party leaders can continuously employ to get support from voters- party adaption, or campaign strategy, is their IV
+
+
+deployed model in a way to retrieve a real opinion poll series in Ireland
+
+
+voters don’t move or change opinions
+
+
+party leaders re-adapt their positions as party support changes
+
+
+},
+	file = {Full Text PDF:/home/stephen/snap/zotero-snap/common/Zotero/storage/ID2MQQNF/Laver - 2005 - Policy and the Dynamics of Political Competition.pdf:application/pdf},
+}
+
+@article{lehrer_governator_2018,
+	title = {Governator vs. {Hunter} and {Aggregator}: {A} simulation of party competition with vote-seeking and office-seeking rules},
+	volume = {13},
+	issn = {1932-6203},
+	shorttitle = {Governator vs. {Hunter} and {Aggregator}},
+	url = {https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0191649},
+	doi = {10.1371/journal.pone.0191649},
+	abstract = {The policy positions parties choose are central to both attracting voters and forming coalition governments. How then should parties choose positions to best represent voters? Laver and Sergenti show that in an agent-based model with boundedly rational actors a decision rule (Aggregator) that takes the mean policy position of its supporters is the best rule to achieve high congruence between voter preferences and party positions. But this result only pertains to representation by the legislature, not representation by the government. To evaluate this we add a coalition formation procedure with boundedly rational parties to the Laver and Sergenti model of party competition. We also add two new decision rules that are sensitive to government formation outcomes rather than voter positions. We develop two simulations: a single-rule one in which parties with the same rule compete and an evolutionary simulation in which parties with different rules compete. In these simulations we analyze party behavior under a large number of different parameters that describe real-world variance in political parties’ motives and party system characteristics. Our most important conclusion is that Aggregators also produce the best match between government policy and voter preferences. Moreover, even though citizens often frown upon politicians’ interest in the prestige and rents that come with winning political office (office pay-offs), we find that citizens actually receive better representation by the government if politicians are motivated by these office pay-offs in contrast to politicians with ideological motivations (policy pay-offs). Finally, we show that while more parties are linked to better political representation, how parties choose policy positions affects political representation as well. Overall, we conclude that to understand variation in the quality of political representation scholars should look beyond electoral systems and take into account variation in party behavior as well.},
+	language = {en},
+	number = {2},
+	urldate = {2023-12-15},
+	journal = {PLOS ONE},
+	author = {Lehrer, Roni and Schumacher, Gijs},
+	month = feb,
+	year = {2018},
+	note = {Publisher: Public Library of Science},
+	keywords = {campaign-issueAdjustment, campaign-utilityFunction, interaction-none, opinions-continuous, opinions-vector, parties-multiple, receptivity-none, topology-none, voting-ideal},
+	pages = {e0191649},
+	annote = {Diff from us
+
+
+extension of Laver’s model: parties can form coalition governments and parties have utility functions (they are motivated by more than just votes)
+
+
+they look at how different party adaption strategies can lead to optimal representation in both parties and the government, whereas we look at how different voting strategies leads to an optimal vote distribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
+
+they hold elections, but all voters vote rationally, whereas we explore different voting strategies
+
+
+},
+	file = {Full Text PDF:/home/stephen/snap/zotero-snap/common/Zotero/storage/7UMBB3DB/Lehrer and Schumacher - 2018 - Governator vs. Hunter and Aggregator A simulation.pdf:application/pdf},
+}
+
 @article{holley_ergodic_1975,
 	title = {Ergodic theorems for weakly interacting infinite systems and the voter model},
 	doi = {http://dx.doi.org/10.1214/aop/1176996306},
@@ -404,4 +503,42 @@ constructuralism = "the assumption that people who share knowledge with one anot
 	note = {Publisher: Routledge
 \_eprint: https://doi.org/10.1080/08824090209384841},
 	pages = {138--145},
+}
+
+@article{erdhos_evolution_1960,
+	title = {On the evolution of random graphs},
+	volume = {5},
+	url = {https://static.renyi.hu/~p_erdos/1960-10.pdf},
+	number = {1},
+	urldate = {2024-01-30},
+	journal = {Publ. math. inst. hung. acad. sci},
+	author = {Erd{\textbackslash}Hos, Paul and Rényi, Alfréd},
+	year = {1960},
+	pages = {17--60},
+	file = {ErdHos_Rényi_1960_On the evolution of random graphs.pdf:/home/stephen/snap/zotero-snap/common/Zotero/storage/YMBYTH3F/ErdHos_Rényi_1960_On the evolution of random graphs.pdf:application/pdf},
+}
+
+@article{kollman_adaptive_1992,
+	title = {Adaptive {Parties} in {Spatial} {Elections}},
+	volume = {86},
+	issn = {0003-0554},
+	url = {https://www.jstor.org/stable/1964345},
+	doi = {10.2307/1964345},
+	abstract = {We develop a model of two-party spatial elections that departs from the standard model in three respects: Parties' information about voters' preferences is limited to polls; parties can be either office-seeking or ideological; and parties are not perfect optimizers, that is, they are modelled as boundedly rational adaptive actors. We employ computer search algorithms to model the adaptive behavior of parties and show that three distinct search algorithms lead to similar results. Our findings suggest that convergence in spatial voting models is robust to variations in the intelligence of parties. We also find that an adaptive party in a complex issue space may not be able to defeat a well-positioned incumbent.},
+	number = {4},
+	urldate = {2024-01-30},
+	journal = {The American Political Science Review},
+	author = {Kollman, Ken and Miller, John H. and Page, Scott E.},
+	year = {1992},
+	note = {Publisher: [American Political Science Association, Cambridge University Press]},
+	pages = {929--937},
+	file = {JSTOR Full Text PDF:/home/stephen/snap/zotero-snap/common/Zotero/storage/KCREQPRM/Kollman et al. - 1992 - Adaptive Parties in Spatial Elections.pdf:application/pdf},
+}
+
+@misc{davies_agent-based_2023,
+	address = {Copenhagen, Denmark},
+	title = {An {Agent}-{Based} {Model} of {Political} {Polarization} {Without} {Party} {Influence} or {Centralized} {Messaging}},
+	author = {Davies, Stephen and Mittereder, Justin},
+	month = jul,
+	year = {2023},
 }
