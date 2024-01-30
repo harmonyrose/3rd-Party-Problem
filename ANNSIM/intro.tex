@@ -16,7 +16,37 @@ influence from their
 peers\cite{dandekar_biased_2013,mcpherson_birds_2001,mas_differentiation_2013}
 among other sources. They are also known to prefer interactions with those who
 are similar to them in some respect (the well-known effect of
-``homophily''\cite{boucher_structural_2015,centola_homophily_2007}) and
+``homophily''\cite{boucher_structural_2015,centola_homophily_2007}) and prone
 to sever social ties with those who believe
 differently\cite{skoric_what_2018,paik_defriending_2023}.
+
+Further, political parties and candidates are known to adjust their positions
+on issues in a strategic attempt to appeal to greater numbers of
+voters.\cite{worcester_voter_2006} This phenomenon, termed ``policy
+positioning''\cite{mcelroy_policy_2012} or ``issue
+adaptation''\cite{benoit_issue_2002} means that, like voters, candidates
+dynamically vary their articulated political opinions over time. Neither voters
+nor candidates occupy a fixed position in opinion space.
+
+This dynamic interplay between voters influencing one another and candidates
+seeking to gain their allegiance is worth studying, in part because the results
+it will produce are unknown at the outset. Will candidates who ``chase'' voters
+in this way succeed in winning more elections? Or will they alienate their base
+by deserting policy positions they previously held, wiping out these gains? If
+voters' opinions are ``drifting'' in response to one another between election
+cycles, will candidates be chasing a moving target and thus outfox themselves?
+
+We purport to answer such questions with an agent-based model that reproduces
+this dance in opinion space between voters and candidates. Opinions on issues
+are represented as vectors of values in a continuous n-dimensional space (as in
+works like \cite{fortunato_vector_2005,lorenz_continuous_2007}), and voters
+interact with one another on a randomly-generated social network, influencing
+each other on these issues. Concurrently, candidates evaluate their estimated
+vote totals and adjust their policy positions in an attempt to maximize them.
+Voters are each equipped with one of a variety of empirically-verified voting
+strategies, and cast their ballots according to that algorithm. With this
+model, we can study the effects of different voting algorithms within the
+electorate, and different strategic choices on the part of candidates, on
+election results.
+
 
