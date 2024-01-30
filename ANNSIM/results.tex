@@ -1,16 +1,36 @@
 \section{Results}
 \label{sec:results}
-\subsection{Single simulation runs}
 
-% 1. Representative plots, and narrative, from single simulations
+\subsection{Parameter settings}
 
-\subsection{Simulation suites and parameter sweeps}
+In all of the following results, we use a suite size of 1200 (that is, 1200
+independent simulations with different random number seeds for \textit{each}
+combination of distinct independent variable values) and run each simulation
+for 400 iterations. We set $V_N=20$ voters, $C_N=3$ candidates, $I_N=3$ issues,
+$p_e=.2$ edge probability, and $E=50$ for eight consecutive elections in the
+400 iteration time period.
 
-% (All with suite size 1200)
-% Regardless of voting makeup:
-%    - * Single-chaser chase dist .28 all the way to .05 at 8th election
-%        Multi-chasers chase dist .28 only down to .15 at 8th election
-%    This will be plot 3a and 3b
+\subsection{Multiple chasers impede one another}
+
+Using the default voting algorithm distribution ($\frac{1}{3}$ rational,
+$\frac{1}{3}$ party, $\frac{1}{6}$ F\&F1, $\frac{1}{6}$ F\&F2)
+When only one of three candidates is chasing votes, it reaches its ``sweet
+spot'' early on, and quickly encounters diminishing returns to further chasing.
+When two candidates are chasing, they take longer to reach their equilibrium.
+(See Figure~\ref{one_vs_two_chasers}.) We speculate that this is because the
+chasers are interfering with one another as they court voters in opinion space,
+dampening the gains of their rival by moving into regions that might have been
+unspoken for.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/one_chaser_maxes_out_soon.png}
+\includegraphics[width=0.45\textwidth]{assets/two_chasers_max_out_later.png}
+\caption{A single chasing candidate maxes out its gains more quickly than two
+competing chasers do.}
+\label{one_vs_two_chasers}
+\end{figure}
+
 % Default voting makeup:
 %    - Rationality: doesn't matter how many chasers. Rationality sucks.
 %    - * Winning: one chaser gets incredible benefit, if there's only one.
