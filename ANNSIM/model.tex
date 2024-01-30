@@ -58,42 +58,74 @@ comparison issue and issue 5 is chosen as the influenced issue. Then suppose
 $O_{i_4} = .2, O_{j_4} = .9$, and $T_p = .6$. Since $|O_{i_4} - O_{j_4}| = .7
 > .6$, $O_{i_5}$ will be pushed away from $O_{j_5}$, and settle at .1.)
 
+Finally, each agent is endowed with a \textbf{party} variable, indicating which
+party they are affiliated with at simulation's start. This is initialized by
+simply assigning each agent the party whose candidate is closest to them in
+opinion space. As the simulation progresses, and both voters and candidates
+adjust their opinions, an agent may drift closer to the agents in a different
+party than the one they are currently assigned to. A \textbf{party switch
+threshold} $T_s$ establishes a hysteresis effect: an agent's distance to a
+different party's centroid must be at least $T_s$ smaller than their distance
+to their current party's centroid in order for a party switch to occur. In this
+case, the agent is simply reassigned to the new party.
 
 \subsection{Elections}
 
-%5. Elections **(HP)**
-%    1. At regular points in time, elections are held, and results tabulated
-
 To study the political impact of the CI2 mechanism and explore the effects of
 issue-based campaigning and voting, we introduce elections to the model.
-Elections are held every $N=50$ steps and results
-are tabulated to determine the winner, as well as the rationality of the
-outcome. An election is considered \textbf{rational} if the winning candidate
-is the candidate that best represents the population in opinion space. This is
-close to what Redlawsk and Habegger describe about an individual
-``\textbf{voting correctly}, or matching their values to the candidate who
-represents them most accurately,''\cite[p.8]{redlawsk_citizens_2020} (emphasis
-original) except that we look at the outcome of the entire election. 
+Elections are held every $E=50$ iterations and results are tabulated to
+determine both the winner and the rationality of the outcome. An election
+outcome is considered \textbf{rational} if the winning candidate is the
+candidate that best represents the population in opinion space. Put another
+way, an election outcome is rational if the candidate who actually wins is the
+same candidate who \textit{would} have won if all agents had been using the
+rational voting algorithm (see section~\ref{votingAlgorithms}, below). This is
+in line with how Redlawsk and Habegger describe an individual ``\textbf{voting
+correctly}, or matching their values to the candidate who represents them most
+accurately,''\cite[p.8]{redlawsk_citizens_2020} (emphasis original) except that
+we look at the outcome of the entire election instead of just a single voter.
 
 \subsubsection{Voting algorithms}
+\label{votingAlgorithms}
 
-%    5. Different voting algorithms **(HP)**
-%        * Rational
-%        * Bounded Rational (or "Constrained Rational")
-%        * F&F1
-%        * F&F2
-%        * Party-line vote
+% (Skipping Bounded Rational (or "Constrained Rational"))
 
-At each election, all agents deploy one of several voting algorithms, modeling the
-discrepancies in the thinking patterns and decision-making strategies of real voters.
-Derived from the literature on voter psychology, the voting algorithms are as follows: 
-rational, party-line, fast \& frugal \#1 (F\&F1), and fast \& frugal \#2 (F\&F2).
-\\\\
-Rational agents vote for the candidate they are closest to in Euclidean space. They are an
-ideal-type voter, representing someone with perfect information and the ability to maximize 
-utility. Party-line agents vote for the candidate that belongs to the same party as them. They vote in a manner that reaffirms their identity as a party member, ignoring positions on issues. F\&F1 agents vote based solely on one "core opinion" that is randomly determined at initialization and remains their core issue through the entire simulation. F\&F2 agents vote based on one "hot topic"
-issue that changes with each election cycle. All F\&F2 voters vote for the candidate closest to them
-on the same issue. F\&F agents embody those who make a calculated trade-off between a good decision and an easy decision. They do not consider all information, only that which is most important to them, and cast their votes based on that limited information, seeing as it is "good enough".
+Each voter agent is assigned one of several voting algorithms at
+initialization, which model the discrepancies in the thinking patterns and
+decision-making strategies of real voters. At election time, a voter uses this
+algorithm to cast their ballot for a candidate. Derived from the literature on
+voter psychology\cite[ch.2]{redlawsk_citizens_2020}, our four voting algorithms
+are as follows: \textbf{rational}, \textbf{party-line}, \textbf{fast \& frugal
+\#1} (F\&F1), and \textbf{fast \& frugal \#2} (F\&F2). The simulation makes it
+possible to adjust what proportion of the electorate's voters will be assigned
+each of the four algorithms, enabling the ``\textbf{voting algorithm
+distribution}'' to be treated as an independent variable.
+
+Rational agents simply vote for the candidate they are closest to in Euclidean
+opinion space. They are an ideal-type voter, representing someone with perfect
+information and the ability to maximize utility.
+
+Party-line agents vote for the candidate that belongs to the party they
+themselves are affiliated with. Thus they vote in a manner that simply
+reaffirms their identity as a party member, ignoring positions on issues
+entirely.
+
+F\&F1 agents are each randomly assigned one ``core issue'' at initialization.
+This remains their core issue through the entire simulation, and solely
+determines how they vote: instead of choosing the candidate closest in
+$I_N$-dimensional opinion space, as rational voters do, F\&F1 voters simply
+choose the candidate closest to them on their core issue.
+
+F\&F2 agents similarly vote based on a single issue, but it is a ``hot topic''
+issue that all F\&F2 agents share, and which changes randomly with each
+election cycle. Thus in contrast to F\&F1, all F\&F2 voters use the same issue
+to make their decision.
+
+Both kinds of F\&F agents represent voters who make a calculated trade-off
+between a good decision and an easy decision. They do not consider all
+information, only that which is most important to them, and cast their votes
+based on that limited information, seeing as it is ``good enough'' (or
+``satisficing''\cite{simon_rational_1956}).
 
 
 \subsection{Parties}
@@ -107,7 +139,9 @@ We initialize parties to represent each of the candidates
 \subsection{Candidate agents}
 
 %4. Candidate agents **(HP)**
-%    1. Their issue positions are modeled similar to voter opinions
+%    1. They have opinions just like agents do
+%    2. They are assigned to a party, and initially determine what party each
+%    agent is assigned to.
 %    2. The "chase" algorithm
 %         Define the terms "chasing candidate" and "non-chasing candidate"
 
