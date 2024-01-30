@@ -1,95 +1,92 @@
 \section{Related work}
 \label{sec:related}
 
-% Key aspects of SD/HP: graph, opinion space, elections, modeling (not
-% forecasting)
-
 % Mention: our work is actually more similar with Axelrod's cultural influence
 % model than most of the election modeling stuff
 
-\subsection{Political opinions and homophily}
-    1. Homophily as a near-universal driver of human behavior **(SD)**
+%\subsection{Political opinions and homophily}
+%
+%The opinion dynamics of individuals on political (or other) matters is a rich
+%field; see Lorenz\cite{lorenz_continuous_2007} and
+%Mastroeni\cite{mastroeni_agent-based_2019} for surveys. A dominant factor in
+%all such studies is the principle of homophily\cite{mcpherson_birds_2001}:
+%people tend to prefer to interact with others who are similar to them in some
+%way (\textit{e.g.}, with respect to the opinions they hold), and become more
+%similar to them over time.
 
 \subsection{Factors that influence voting}
-%    2. Factors that go into voting **(HP)**
-%        * choice of candidate
-%        * whether to "turn out"
-To model a political system, the nuanced psychological factors that influence voting decisions must be meaningfully consolidated down to only the most significant components.
-It is a complex field of study; prior to even choosing a candidate, citizens must first decide whether or not they will even turn out, which entails its own distinct psychological process. To narrow the scope of our study, we assume all agents will vote, allowing us to focus on the dynamics and minds of politically active citizens.
 
-Redlawsk 
-and Habegger \cite{redlawsk_citizens_2020} consolidated the findings of political psychologists to coin 
-several ideal-type voters that illustrate how different strategies of information 
-processing manifest in voters’ decisions. The driving mechanism that dictates how 
-citizens make voting decisions can be described by the natural trade-off that exists between making 
-a good decision and an easy decision. We explore the effect voters have on a political 
-system when they sacrifice a full assessment of the information environment for a 
-quick, uncomplicated decision. 
+To model a political system, the nuanced psychological factors that influence
+voting decisions must be meaningfully consolidated down to only the most
+significant components. It is a complex field of study; prior to even choosing
+a candidate, citizens must first decide whether or not they will even turn out,
+which entails its own distinct psychological process. To narrow the scope of
+our study, we assume all agents will vote, allowing us to focus on the dynamics
+and minds of politically active citizens.
 
-
-\subsection{Opinion Dynamics models}
-%    1. Lots of OD lit, but remarkably little on continuous opinion vectors **(SD)**
-% No opinion space
-In many approaches to modeling elections, voters' attitudes towards the parties
-comprises merely a valence and possibly a magnitude, rather than involving a
-more complex amalgamation of issue positions. The original binary voter model,
-for example, utilized only a single ``issue'' upon which an individual could
-hold a position.\cite{holley_ergodic_1975,clifford_model_1973}. Even in
-Kottonau and Paul-Wohstl's much more recent seminal
-work\cite{kottonau_simulating_2004}, citizens maintain a ``mental accounting''
-of only a single variable over the course of an election season -- namely,
-which of the two parties they favor. The campaigns for these parties then
-attempt to optimize their advertising resources to influence would-be voters at
-opportune times. Burke and Searle\cite{burke_quantitatively_2022} followed
-Sobkowicz's emotion/information/opinion (E/I/O)
-approach\cite{sobkowicz_quantitative_2016} in making agents' mental states more
-complex and realistic: in addition to holding a certain opinion about a party
-(or candidate), an agent is, at any moment, in either a ``calm'' or
-``agitated'' state, which controls how they influence and are influenced by
-other agents (and by campaign messaging). Here, too, the object of analysis is
-a single ``issue'' (pro party A or B), not an array of them.
-
-Our model, in contrast to all of these, the main levers available to a campaign
-are the party's issue positions, which they can adjust in an attempt to woo
-voters.
-
-\subsubsection{Continuous opinion vectors}
-    2. Other OD approaches to continuous opinion vectors **(SD)**
-
-% Opinion space done differently
-
-% Various researchers have probed the idea of a vector of opinions (or other
-% attributes), such as Axelrod 1997, Fortunato 2005, Weisbuch 2002, and those
-% mentioned in Lorenz's 2007 and Mastroeni et al's 2019 surveys. None of these
-% involve elections or candidates, though. Weisbuch and some others use a
-% simplex, which is a different appproach entirely.
-
-% Weisbuch
-% Jung et al 2021
-%   multiple issues, but opinions on each one is binary
-%   adjacent-numbered issues are presumed to be semantically related to each
-%     other. an agent having all 0's, or all 1's, is interpreted as being
-%     "consistent" in some way.
-%   the main influencing dynamic is not pairwise, but *groupwise*. (considering
-%     an agent's entire ingroup.)
-
-% Sîrbu et al 2013  "vector of values, but not in the same way as ours;
-%   instead, the vector represents multiple possible positions on a single
-%   issue (e.g., agent A is .3 "permanent cease fire in Gaza", .2 "temporary
-%   cease fire in Gaza," .5 "increase US funding to Israel in fighting
-%   Hamas.")"
+Redlawsk and Habegger\cite{redlawsk_citizens_2020} consolidated the findings
+of political psychologists to coin several ideal-type voters that illustrate
+how different strategies of information processing manifest in voters'
+decisions. The driving mechanism that dictates how citizens make voting
+decisions can be described by the natural trade-off that exists between making
+a good decision and an easy decision. We explore the effect voters have on a
+political system when they sacrifice a full assessment of the information
+environment for a quick, uncomplicated decision. 
 
 
-\subsubsection{Modeling the election process}
-%    3. Approaches to actually modeling the election process **(HP)**
-%        * note that this is different than election forecasting
-% Election forecasting
+\subsection{Modeling voter opinions}
 
-Existing agent-based election models focus on the continuous dynamics of
-political systems in which all voters have fixed opinions and are assumed to 
-always support the candidate closest to them in the opinion space \cite{kollman_adaptive_1992, laver_policy_2005, lehrer_governator_2018, wright_modeling_2015}. In his formative work, Laver \cite{laver_policy_2005} studies how candidates can use different issue adjustment
-campaign strategies to gain more support. Lehrer and Schumacher \cite{lehrer_governator_2018} build upon Laver's foundation by modeling party formations and coalition governments, and more recently Wright and Sengupta \cite{wright_modeling_2015} study the impact of oligarchs on a democratic model.
+In many approaches to modeling opinion dynamics, each agent's opinion comprises
+merely a valence and possibly a magnitude, rather than involving a more complex
+amalgamation of issue positions. The original binary voter model, for example,
+utilized only a single ``issue'' upon which an individual could hold a
+position.\cite{holley_ergodic_1975,clifford_model_1973}. Even in Kottonau and
+Paul-Wohstl's much more recent seminal work\cite{kottonau_simulating_2004},
+citizens maintain a ``mental accounting'' of only a single variable over the
+course of an election season -- namely, which of the two parties they favor.
+The campaigns for these parties then attempt to optimize their advertising
+resources to influence would-be voters at opportune times. Burke and
+Searle\cite{burke_quantitatively_2022} followed Sobkowicz's
+emotion/information/opinion (E/I/O) approach\cite{sobkowicz_quantitative_2016}
+in making agents' mental states more complex and realistic: in addition to
+holding a certain opinion about a party (or candidate), an agent is, at any
+moment, in either a ``calm'' or ``agitated'' state, which controls how they
+influence and are influenced by other agents (and by campaign messaging). Here,
+too, the object of analysis is a single ``issue'' (pro party A or B), not an
+array of them.
 
+Various researchers have probed the idea of voters possessing an array of issue
+positions (or other
+attributes)\cite{axelrod_dissemination_1997,fortunato_vector_2005,weisbuch_meet_2002,schweighofer_agent-based_2020,jung_cultural_2021,sirbu_opinion_2013}
+but there have been few studies on applying these ideas specifically to
+elections.
+
+\subsection{Modeling the election process}
+
+One election-centric study that did employ agents with an array of opinions is
+the older but seminal work by Kollman \textit{et
+al}\cite{kollman_adaptive_1992}. This work explored similar themes to ours, but
+with discrete-valued opinions, no variation in voting algorithms among voters,
+and exactly two parties (incumbent and challenger) whose strategies encompassed
+an entire sequence of consecutive elections. Our multi-party model, by
+contrast, features a heterogeneous electorate in which different voters use
+different decision procedures for candidate selection. Parties have visibility
+into voter issue positions (an analogy to opinion polls) and can adjust their
+party's platform in between elections in order to woo them, but face the wild
+card of an unknown proportion of agents not voting rationally. The interplay
+between these campaign choices and the diverse ways in which voters actually
+choose how to vote is a novel contribution of this paper.
+
+Other existing agent-based election models focus on the continuous dynamics of
+political systems in which all voters have fixed opinions and are assumed to
+always support the candidate closest to them in the opinion space
+\cite{kollman_adaptive_1992,laver_policy_2005,lehrer_governator_2018,
+wright_modeling_2015}. In his formative work, Laver\cite{laver_policy_2005}
+studies how candidates can use different issue adjustment campaign strategies
+to gain more support. Lehrer and Schumacher\cite{lehrer_governator_2018} build
+upon Laver's foundation by modeling party formations and coalition governments,
+and Wright and Sengupta\cite{wright_modeling_2015} study the impact of
+oligarchs on a democratic model.
 
 Recently, Gao \textit{et al}\cite{gao_forecasting_2022} have presented a
 promising approach to election forecasting. They combine current demographic
@@ -99,12 +96,6 @@ and in which direction. This is very different from our model, both in purpose
 (actually forecasting upcoming elections, rather than exploring ``what if?''
 voting strategy scenarios) and in approach (the agents in
 \cite{gao_forecasting_2022} do not influence one another on a social network.)
-
-The emotion/information/opinion (E/I/O) approach, utilized by both
-\cite{sobkowicz_quantitative_2016} and, more recently,
-\cite{burke_quantitatively_2022}, can lead to less rigidity in model outcomes
-and perhaps even conditions conducive to legitimate third parties coming into
-play.
 
 
 % Harmony's unorganized notes
