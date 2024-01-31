@@ -65,41 +65,32 @@ $O_{i_4} = .2, O_{j_4} = .9$, and $T_p = .6$. Since $|O_{i_4} - O_{j_4}| = .7
 
 \subsection{Candidate agents}
 
-%4. Candidate agents **(HP)**
-%    1. They have opinions just like agents do
-%    2. They are assigned to a party, and initially determine what party each
-%    agent is assigned to.
-%    2. The "chase" algorithm
-%         Define the term "chase radius"
-%         Define the terms "chasing candidate" and "non-chasing candidate"
-
-Immediately following every election, each \textbf{chasing candidate} 
-adjusts their opinions such that they would receive the maximum number of votes 
-possible if all agents were to vote rationally at that time. Chasing candidates' information environments are restricted to the opinions of voters one election previous to the current one. They do not know how agents will actually
-vote, nor do they know how agents' opinions have changed during the most recent 
-election interval. To ensure candidates are not abandoning their party ideologically, their movement is constrained within a \textbf{"chase radius"} of $R_C$ away from
-their party's centroid. \textbf{Non-chasing candidates} never adjust their opinions 
-to chase votes.
+Immediately following every election, each \textbf{chasing candidate} adjusts
+their opinions such that they would receive the maximum number of votes
+possible if all agents were to vote rationally at that time. Chasing
+candidates' information environments are restricted to the opinions of voters
+one election previous to the current one. They do not know how agents will
+actually vote, nor do they know how agents' opinions have changed during the
+most recent election interval. To ensure candidates are not abandoning their
+party ideologically, their movement is constrained within a ``\textbf{chase
+radius}'' of $R_C$ away from their party's centroid. \textbf{Non-chasing
+candidates} never adjust their opinions to chase votes.
 
 
 \subsection{Parties}
 
-Party affiliations are initialized by
-simply assigning each agent the party whose candidate is closest to them in
-opinion space. Each party has a \textbf{"centroid"}, which is the average
-opinion vector of all agents affiliated with that party, and is recomputed at
-each step of the simulation.
+Party affiliations are initialized by simply assigning each agent the party
+whose candidate is closest to them in opinion space. Each party has a
+\textbf{centroid}, which is the average opinion vector of all agents
+affiliated with that party, and is recomputed at each step of the simulation.
 
-As the simulation progresses, and both voters and candidates
-adjust their opinions, an agent may drift closer to the agents in a different
-party than the one they are currently assigned to.
-A \textbf{party switch
-	threshold} $T_s$ establishes a hysteresis effect: an agent's distance to a
-different party's centroid must be at least $T_s$ smaller than their distance
-to their current party's centroid in order for a party switch to occur. In this
-case, the agent is simply reassigned to the new party. 
- 
-
+As the simulation progresses, and both voters and candidates adjust their
+opinions, an agent may drift closer to the agents in a different party than the
+one they are currently assigned to. A \textbf{party switch threshold} $T_s$
+establishes a hysteresis effect: an agent's distance to a different party's
+centroid must be at least $T_s$ smaller than their distance to their current
+party's centroid in order for a party switch to occur. In this case, the agent
+is simply reassigned to the new party. 
 
 
 
