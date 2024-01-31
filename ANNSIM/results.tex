@@ -31,26 +31,51 @@ competing chasers do.}
 \label{one_vs_two_chasers}
 \end{figure}
 
-% Default voting makeup:
-%    - Rationality: doesn't matter how many chasers. Rationality sucks.
-%    - * Winning: one chaser gets incredible benefit, if there's only one.
-%    This will be plot 4a and 4b
+This effect can be further illustrated by looking at how many elections are
+actually won by chasing vs. non-chasing candidates.
+Figure~\ref{chasing_winners} shows the proportion of elections won by each
+candidate in a three-candidate race with one chaser (left side) and with two
+(right side). (Error bars are 95\% confidence intervals for a proportion,
+assuming normality.) As you can see, when only one candidate chases voters, it
+has a tremendous advantage over the other candidates, and this advantage
+increases the longer that the drifting/chasing mechanism continues. Two
+chasers, however, interfere with one another such that each gets only a modest
+benefit.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/one_chaser_big_benefit.png}
+\includegraphics[width=0.45\textwidth]{assets/two_chasers_small_benefit.png}
+\caption{Using the default voting algorithm distribution, a single chasing
+candidate (red) has an enormous advantage over its competitors. If two
+candidates (both red and blue) are chasing voters, however, neither gains
+nearly as much benefit. (Note: the small advantages that red consistently has
+over blue are an artifact of how the simulation handles ties -- it awards
+victory to the lowest-numbered tied candidate. This is miniscule in comparison
+with the main effect illustrated here, however.)}
+\label{chasing_winners}
+\end{figure}
+
 % No rational voters:
 %    - Rationality: doesn't matter how many chasers. Rationality sucks.
 %    - * Winning: chaser doesn't get any appreciable benefit.
-%    This will be plot 5
 % No FF voters:
 %    - Rationality: doesn't matter how many chasers. Rationality overall better.
 %    - * Winning: one chaser gets incredible benefit, if there's only one.
 % All party voters:
 %    - Rationality: Rationality REALLY sucks. Each additional chaser makes this
-%    noticeably worse (though not stat sig).
-%    - * Winning: chaser doesn't get any appreciable benefit.
+%    noticeably worse (though not stat sig). Also, over time it gets noticeably
+%    - Winning: chaser doesn't get any appreciable benefit. (sanity check, duh)
+%    This will be plot 5: all_party_1_chaser_no_benefit.png
 % All rational voters:
 %    - Rationality: Rationality uniformly perfect.
 %    - * Winning: one chaser gets incredible benefit, if there's only one.
 %      * Now if there are two, they both get incredible benefit.
-%    This will be plot 6a and 6b  (contrast with 4a and 4b)
+%    This will be plot 6a and 6b  (contrast with 4a and 4b):
+%       all_rat_one_chaser_even_bigger_benefit.png,
+%         all_rat_two_chasers_even_bigger_benefit.png
+
+% (HP re-ran these: check them in email.)
 % All FF voters:
 %    - Rationality: doesn't matter how many chasers. Rationality really sucks.
 %    - * Winning: chaser doesn't get any appreciable benefit.
