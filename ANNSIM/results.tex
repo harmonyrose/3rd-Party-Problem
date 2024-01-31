@@ -31,29 +31,74 @@ competing chasers do.}
 \label{one_vs_two_chasers}
 \end{figure}
 
-% Default voting makeup:
-%    - Rationality: doesn't matter how many chasers. Rationality sucks.
-%    - * Winning: one chaser gets incredible benefit, if there's only one.
-%    This will be plot 4a and 4b
-% No rational voters:
-%    - Rationality: doesn't matter how many chasers. Rationality sucks.
-%    - * Winning: chaser doesn't get any appreciable benefit.
-%    This will be plot 5
-% No FF voters:
-%    - Rationality: doesn't matter how many chasers. Rationality overall better.
-%    - * Winning: one chaser gets incredible benefit, if there's only one.
-% All party voters:
-%    - Rationality: Rationality REALLY sucks. Each additional chaser makes this
-%    noticeably worse (though not stat sig).
-%    - * Winning: chaser doesn't get any appreciable benefit.
-% All rational voters:
-%    - Rationality: Rationality uniformly perfect.
-%    - * Winning: one chaser gets incredible benefit, if there's only one.
-%      * Now if there are two, they both get incredible benefit.
-%    This will be plot 6a and 6b  (contrast with 4a and 4b)
-% All FF voters:
-%    - Rationality: doesn't matter how many chasers. Rationality really sucks.
-%    - * Winning: chaser doesn't get any appreciable benefit.
+\subsection{Multiple chasers reduce one another's gains}
+
+The above effect can be further illustrated by looking at how many elections
+are actually won by chasing vs. non-chasing candidates.
+Figure~\ref{chasing_winners} shows the proportion of elections won by each
+candidate in a three-candidate race with one chaser (left side) and with two
+(right side). (Error bars are 95\% confidence intervals for a proportion,
+assuming normality.) As you can see, when only one candidate chases voters, it
+has a tremendous advantage over the other candidates, and this advantage
+increases the longer that the drifting/chasing mechanism continues. Two
+chasers, however, interfere with one another such that each gets only a modest
+benefit.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/one_chaser_big_benefit.png}
+\includegraphics[width=0.45\textwidth]{assets/two_chasers_small_benefit.png}
+\caption{Using the default voting algorithm distribution, a single chasing
+candidate (red) has an enormous advantage over its competitors. If two
+candidates (both red and blue) are chasing voters, however, neither gains
+nearly as much benefit. (Note: the small advantages that red consistently has
+over blue are an artifact of how the simulation handles ties -- it awards
+victory to the lowest-numbered tied candidate. This is miniscule in comparison
+with the main effect illustrated here, however.)}
+\label{chasing_winners}
+\end{figure}
+
+\subsection{The impact of voting algorithm distribution}
+
+All of the above results were obtained with the default voting algorithm
+distribution ($\frac{1}{3}$ rational, $\frac{1}{3}$ party, $\frac{1}{6}$ F\&F1,
+$\frac{1}{6}$ F\&F2) and it turns out they are highly sensitive to it. In an
+electorate with \textit{no} rational voters, by contrast, chasers get little to
+no benefit. They are trying to appeal to the issue positions of voters who will
+not in fact be voting based on those positions. Chasing candidates have no
+advantage even if there are many, or even all, F\&F voters. This is somewhat
+surprising since F\&F voters do ``noisily'' vote based on their issue positions
+(they consider only one of them, instead of all three). Compare
+Figure~\ref{chasing_vs_distro} (the left side has all party-line voters, the
+right side has all F\&F voters) with the left side of
+Figure~\ref{chasing_winners} (which has the default voting algorithm
+distribution) to see the difference.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/all_party_1_chaser_no_benefit.png}
+\includegraphics[width=0.45\textwidth]{assets/all_ff_chasers_no_benefit.png}
+\caption{When the electorate is changed to have all party-line voters (left) or
+all fast \& frugal voters (right), chasing candidates have little appreciable
+advantage.}
+\label{chasing_vs_distro}
+\end{figure}
+
+At the other extreme, an electorate of all rational voters gives the maximum
+benefit to chasing candidates (see Figure~\ref{all_rat_chasers_benefit}). In
+this scenario, even when two candidates are chasers, they do not interfere with
+one another enough to nullify their effects -- both easily eclipse the single
+non-chasing candidate (Figure~\ref{all_rat_chasers_benefit}, right side.)
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/all_rat_one_chaser_even_bigger_benefit.png}
+\includegraphics[width=0.45\textwidth]{assets/all_rat_two_chasers_even_bigger_benefit.png}
+\caption{An electorate of all rational voters confers maximum benefit to
+chasing. Even when there are two chasers (right side) they each receive an
+advantage.}
+\label{all_rat_chasers_benefit}
+\end{figure}
 
 % Question for us to figure out: why, if default voter alg, only one chaser
 % gets any benefit (two chasers cancel each others' benefits out stat sig) but
