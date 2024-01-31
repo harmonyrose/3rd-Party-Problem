@@ -63,11 +63,26 @@ with the main effect illustrated here, however.)}
 All of the above results were obtained with the default voting algorithm
 distribution ($\frac{1}{3}$ rational, $\frac{1}{3}$ party, $\frac{1}{6}$ F\&F1,
 $\frac{1}{6}$ F\&F2) and it turns out they are highly sensitive to it. In an
-electorate with \textit{no} rational voters, by contrast, chasers get no
-appreciable benefit. They are trying to appeal to the issue positions of voters
-who will not in fact be voting based on those positions. This is true even if
-there are many, or even all, F\&F voters, who do ``noisily'' vote based on
-their issue positions (considering only one of them, instead of all three.)
+electorate with \textit{no} rational voters, by contrast, chasers get little to
+no benefit. They are trying to appeal to the issue positions of voters who will
+not in fact be voting based on those positions. Chasing candidates have no
+advantage even if there are many, or even all, F\&F voters. This is somewhat
+surprising since F\&F voters do ``noisily'' vote based on their issue positions
+(they consider only one of them, instead of all three). Compare
+Figure~\ref{chasing_vs_distro} (the left side has all party-line voters, the
+right side has all F\&F voters) with the left side of
+Figure~\ref{chasing_winners} (which has the default voting algorithm
+distribution) to see the difference.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{assets/all_party_1_chaser_no_benefit.png}
+\includegraphics[width=0.45\textwidth]{assets/all_ff_chasers_no_benefit.png}
+\caption{When the electorate is changed to have all party-line voters (left) or
+all fast \& frugal voters (right), chasing candidates have little appreciable
+advantage.}
+\label{chasing_vs_distro}
+\end{figure}
 
 % No rational voters:
 %    - Rationality: doesn't matter how many chasers. Rationality sucks.
