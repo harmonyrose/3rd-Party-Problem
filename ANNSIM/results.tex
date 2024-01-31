@@ -100,6 +100,25 @@ advantage.}
 \label{all_rat_chasers_benefit}
 \end{figure}
 
+
+\subsection{The chase radius}
+
+Recall that the chase radius sets a limit on how far candidates can wander in
+opinion space every time they chase voters. Interestingly, the value of this
+parameter has little effect on election outcomes. Figure~\ref{chase_radius}
+shows winner outcomes in two-chaser elections for three different values of the
+chase radius: 0.1, 0.2, and 0.3.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.31\textwidth]{assets/chase_radius_.1_winners.png}
+\includegraphics[width=0.31\textwidth]{assets/chase_radius_.2_winners.png}
+\includegraphics[width=0.31\textwidth]{assets/chase_radius_.3_winners.png}
+\caption{Election winners when two chasers' chase radii are varied from .1 to
+.2 to .3. The outcomes show negligible difference.}
+\label{chase_radius}
+\end{figure}
+
 % Question for us to figure out: why, if default voter alg, only one chaser
 % gets any benefit (two chasers cancel each others' benefits out stat sig) but
 % if all voters are rational, then two chasers both benefit.
