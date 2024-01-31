@@ -31,8 +31,10 @@ competing chasers do.}
 \label{one_vs_two_chasers}
 \end{figure}
 
-This effect can be further illustrated by looking at how many elections are
-actually won by chasing vs. non-chasing candidates.
+\subsection{Multiple chasers reduce one another's gains}
+
+The above effect can be further illustrated by looking at how many elections
+are actually won by chasing vs. non-chasing candidates.
 Figure~\ref{chasing_winners} shows the proportion of elections won by each
 candidate in a three-candidate race with one chaser (left side) and with two
 (right side). (Error bars are 95\% confidence intervals for a proportion,
@@ -55,6 +57,17 @@ victory to the lowest-numbered tied candidate. This is miniscule in comparison
 with the main effect illustrated here, however.)}
 \label{chasing_winners}
 \end{figure}
+
+\subsection{The impact of voting algorithm distribution}
+
+All of the above results were obtained with the default voting algorithm
+distribution ($\frac{1}{3}$ rational, $\frac{1}{3}$ party, $\frac{1}{6}$ F\&F1,
+$\frac{1}{6}$ F\&F2) and it turns out they are highly sensitive to it. In an
+electorate with \textit{no} rational voters, by contrast, chasers get no
+appreciable benefit. They are trying to appeal to the issue positions of voters
+who will not in fact be voting based on those positions. This is true even if
+there are many, or even all, F\&F voters, who do ``noisily'' vote based on
+their issue positions (considering only one of them, instead of all three.)
 
 % No rational voters:
 %    - Rationality: doesn't matter how many chasers. Rationality sucks.
