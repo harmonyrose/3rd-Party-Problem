@@ -50,18 +50,17 @@ be homophilous and therefore trustworthy. It will then move its opinion on
 $I_f$ ($O_{i_f}$) to be the average of its current value and agent $V_j$'s
 value on $I_f$ ($O_{j_f}$). (For example, suppose issue 9 is chosen as the
 comparison issue and issue 2 is chosen as the influenced issue. Then suppose
-$O_{i_9} = .2, O_{j_9} = .4$, and $T_o = .15$. Since $|O_{i_9} - O_{j_9}| = .2
-< .15$, $O_{i_2}$ will be influenced midway towards $O_{j_2}$, and settle at
-.3.)
+$O_{i_9} = .2, O_{j_9} = .3$, and $T_o = .15$. Since $|O_{i_9} - O_{j_9}| = .1
+< .15$, $O_{i_2}$ will be influenced midway towards $O_{j_2}$. So, if $O_{i_2} = .6$ and $O_{j_2} = .9$, then $O_{i_2}$ becomes $.75$.)
 
 On the other hand, if $|V_i - V_j| > T_p$, where $T_p$ is the \textbf{pushaway
 threshold}, agent $V_i$ considers $V_j$ to be so dissimilar that its opinion on
-the influenced issue $T_f$ will be repelled. In this case, agent $V_i$ will
+the influenced issue $I_f$ will be repelled. In this case, agent $V_i$ will
 move its opinion on $I_f$ to be midway between its current position and that of
 the pole (either 0 or 1). (For example, suppose issue 4 is chosen as the
 comparison issue and issue 5 is chosen as the influenced issue. Then suppose
 $O_{i_4} = .2, O_{j_4} = .9$, and $T_p = .6$. Since $|O_{i_4} - O_{j_4}| = .7
-> .6$, $O_{i_5}$ will be pushed away from $O_{j_5}$, and settle at .1.)
+> .6$, $O_{i_5}$ will be pushed away from $O_{j_5}$. If $O_{i_5} = .4$ and $O_{j_5} = .7$, then $O_{i_5}$ will be repelled to $.2$)
 
 \subsection{Parties}
 
@@ -73,10 +72,12 @@ affiliated with that party, and is recomputed at each step of the simulation.
 As the simulation progresses, and both voters and candidates adjust their
 opinions, an agent may drift closer to the agents in a different party than the
 one they are currently assigned to. A \textbf{party switch threshold} $T_s$
-establishes a hysteresis effect: an agent's distance to a different party's
+establishes a hysteresis effect: an agent's Euclidean distance to a different party's
 centroid must be at least $T_s$ smaller than their distance to their current
 party's centroid in order for a party switch to occur. In this case, the agent
-is simply reassigned to the new party. 
+is simply reassigned to the new party. This adds a sense of party loyalty to the model
+in which agents do not hastily switch parties. Party affiliation only affects
+the behavior of party-line voter agents.
 
 
 

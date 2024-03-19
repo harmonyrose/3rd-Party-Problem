@@ -12,12 +12,12 @@ similar enough (or dissimilar enough) on the comparison issue. These drift
 distances decay over the course of about four hundred iterations until an
 equilibrium is reached. Empirically, we discovered that an \textbf{openness}
 parameter value of \textbf{.1}, and a \textbf{pushaway} of \textbf{.6}, worked
-well for producing the CI2 effect.
+well for leading the CI2 mechanism to an eventual equilibrium.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.45\textwidth]{assets/drifts_asymptote.png}
-\includegraphics[width=0.45\textwidth]{assets/chase_dists_asymptote.png}
+\includegraphics[width=0.41\textwidth]{assets/chase_dists_updated.png}
 \caption{Both voters' drift movements (due to the CI2 mechanism approaching steady
 state) and candidates' chase movements (due to all candidates reaching local
 maxima in state space) asymptote to zero.}
@@ -30,7 +30,7 @@ nearby ``low-hanging fruit'' (voters not locked in by any other candidate and
 thus prime for poaching), candidates face diminishing returns when chasing any
 further would jeopardize their existing voters. See
 Figure~\ref{drifts_and_chases_asymptote} (right) for an illustration with two
-chasing candidates. Note that the voters approach zero mean drift distance more
+chasing candidates and one non-chasing candidate. Note that the voters approach zero mean drift distance more
 quickly than the candidates approach zero mean chase distance. This is to be
 expected since candidates are (1) only chasing each election (every $E$
 iterations) instead of every iteration, (2) self-imposing a limit (the chase

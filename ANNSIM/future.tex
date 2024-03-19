@@ -16,16 +16,13 @@
 
 %a non-fixed voting population (voters enter/exit, influenced by parents)
 
-In the future, we hope to explore a more sophisticated modeling of issue
-importance. While the fast \& frugal voting algorithms incorporated one
-``important issue,'' it was done in an all-or-nothing manner. We would like to
-incorporate continuous, or perhaps ranked, levels of importance to the agents'
-opinions. These would not only affect the manner in which fast \& frugal agents
-cast their votes, but also impact the way voters interact with other, being
-more likely to bring up important issues in interactions.
+One future point of exploration is testing the sensitivity of the model to network
+variance. We used an  Erd\H{o}s-R\'{e}nyi graph,
+but would like to test our model with different networks and edge probabilities.
 
-Another potential point of exploration is modifying the structure of the
-simulation's underlying environment. This may be done by varying the number of
-candidates or testing different social network types and parameters. An
-entirely new dynamic may emerge between voters and candidates when they are in
-a society with different social and political conditions.
+Our next major step is to fit the model to empirical data by calibrating the
+initial conditions and validating the outcomes with polling data. This would allow
+us to model the effectiveness of vote-seeking campaigns in a real democratic
+system, and arguably more importantly, identify feasible strategies to increase the 
+rationality of elections.
+
