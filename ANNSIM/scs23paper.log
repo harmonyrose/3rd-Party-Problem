@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10) (preloaded format=pdflatex 2023.12.27)  18 MAR 2024 23:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.10) (preloaded format=pdflatex 2023.12.27)  19 MAR 2024 21:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -756,19 +756,19 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 {C:/Users/harmo/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/harm
 o/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}])
 (related.tex [2]) (model.tex [3] [4]) (experimentation.tex
-<assets/drifts_asymptote.png, id=114, 462.528pt x 313.17pt>
+<assets/drifts_asymptote.png, id=116, 462.528pt x 313.17pt>
 File: assets/drifts_asymptote.png Graphic file (type png)
 <use assets/drifts_asymptote.png>
 Package pdftex.def Info: assets/drifts_asymptote.png  used on input line 19.
 (pdftex.def)             Requested size: 211.3883pt x 143.12811pt.
-<assets/chase_dists_updated.png, id=116, 456.20438pt x 345.54094pt>
+<assets/chase_dists_updated.png, id=118, 456.20438pt x 345.54094pt>
 File: assets/chase_dists_updated.png Graphic file (type png)
 <use assets/chase_dists_updated.png>
 Package pdftex.def Info: assets/chase_dists_updated.png  used on input line 20.
 
 (pdftex.def)             Requested size: 192.60126pt x 145.88017pt.
  [5]) (results.tex
-<assets/one_chaser_maxes_updated.png, id=127, 437.88594pt x 313.67188pt>
+<assets/one_chaser_maxes_updated.png, id=129, 437.88594pt x 313.67188pt>
 File: assets/one_chaser_maxes_updated.png Graphic file (type png)
 <use assets/one_chaser_maxes_updated.png>
 Package pdftex.def Info: assets/one_chaser_maxes_updated.png  used on input lin
@@ -781,38 +781,38 @@ Package pdftex.def Info: assets/chase_dists_updated.png  used on input line 29.
 (pdftex.def)             Requested size: 201.9912pt x 152.9928pt.
 
 [6 <./assets/drifts_asymptote.png> <./assets/chase_dists_updated.png>]
-<assets/one_chaser_big_updated.png, id=141, 423.5825pt x 316.18124pt>
+<assets/one_chaser_big_updated.png, id=143, 423.5825pt x 316.18124pt>
 File: assets/one_chaser_big_updated.png Graphic file (type png)
 <use assets/one_chaser_big_updated.png>
 Package pdftex.def Info: assets/one_chaser_big_updated.png  used on input line 
 50.
 (pdftex.def)             Requested size: 211.3883pt x 157.78629pt.
-<assets/two_chasers_small_updated.png, id=142, 423.5825pt x 320.44719pt>
+<assets/two_chasers_small_updated.png, id=144, 423.5825pt x 320.44719pt>
 File: assets/two_chasers_small_updated.png Graphic file (type png)
 <use assets/two_chasers_small_updated.png>
 Package pdftex.def Info: assets/two_chasers_small_updated.png  used on input li
 ne 51.
 (pdftex.def)             Requested size: 211.3883pt x 159.91515pt.
-<assets/chase_radius_.1_updated.png, id=144, 263.7353pt x 198.24063pt>
+ [7 <./assets/one_chaser_maxes_updated.png> <./assets/one_chaser_big_updated.pn
+g> <./assets/two_chasers_small_updated.png>]
+<assets/chase_radius_.1_updated.png, id=156, 263.7353pt x 198.24063pt>
 File: assets/chase_radius_.1_updated.png Graphic file (type png)
 <use assets/chase_radius_.1_updated.png>
 Package pdftex.def Info: assets/chase_radius_.1_updated.png  used on input line
  73.
 (pdftex.def)             Requested size: 145.6229pt x 109.45918pt.
-<assets/chase_radius_.2_updated.png, id=145, 260.47313pt x 198.49156pt>
+<assets/chase_radius_.2_updated.png, id=157, 260.47313pt x 198.49156pt>
 File: assets/chase_radius_.2_updated.png Graphic file (type png)
 <use assets/chase_radius_.2_updated.png>
 Package pdftex.def Info: assets/chase_radius_.2_updated.png  used on input line
  74.
 (pdftex.def)             Requested size: 145.6229pt x 110.96974pt.
-<assets/chase_radius_.3_updated.png, id=146, 260.22218pt x 199.74625pt>
+<assets/chase_radius_.3_updated.png, id=158, 260.22218pt x 199.74625pt>
 File: assets/chase_radius_.3_updated.png Graphic file (type png)
 <use assets/chase_radius_.3_updated.png>
 Package pdftex.def Info: assets/chase_radius_.3_updated.png  used on input line
  75.
 (pdftex.def)             Requested size: 145.6229pt x 111.78093pt.
- [7 <./assets/one_chaser_maxes_updated.png> <./assets/one_chaser_big_updated.pn
-g> <./assets/two_chasers_small_updated.png>]
 <assets/diff_chase_radii_dists_updated.png, id=160, 265.74281pt x 204.01219pt>
 File: assets/diff_chase_radii_dists_updated.png Graphic file (type png)
 <use assets/diff_chase_radii_dists_updated.png>
@@ -826,42 +826,43 @@ File: assets/diff_chase_radii_winners_updated.png Graphic file (type png)
 Package pdftex.def Info: assets/diff_chase_radii_winners_updated.png  used on i
 nput line 96.
 (pdftex.def)             Requested size: 211.3883pt x 158.3007pt.
-<assets/all_party_1_chaser_no_updated.png, id=164, 280.54813pt x 214.55156pt>
+ [8 <./assets/chase_radius_.1_updated.png> <./assets/chase_radius_.2_updated.pn
+g> <./assets/chase_radius_.3_updated.png> <./assets/diff_chase_radii_dists_upda
+ted.png> <./assets/diff_chase_radii_winners_updated.png>]
+<assets/all_party_1_chaser_no_updated.png, id=177, 280.54813pt x 214.55156pt>
 File: assets/all_party_1_chaser_no_updated.png Graphic file (type png)
 <use assets/all_party_1_chaser_no_updated.png>
 Package pdftex.def Info: assets/all_party_1_chaser_no_updated.png  used on inpu
 t line 123.
 (pdftex.def)             Requested size: 211.3883pt x 161.65968pt.
-<assets/all_ff_chasers_no_updated.png, id=165, 280.79906pt x 213.04594pt>
+<assets/all_ff_chasers_no_updated.png, id=178, 280.79906pt x 213.04594pt>
 File: assets/all_ff_chasers_no_updated.png Graphic file (type png)
 <use assets/all_ff_chasers_no_updated.png>
 Package pdftex.def Info: assets/all_ff_chasers_no_updated.png  used on input li
 ne 124.
 (pdftex.def)             Requested size: 211.3883pt x 160.3822pt.
-<assets/all_rat_one_chaser_updated.png, id=168, 282.55562pt x 216.55907pt>
+<assets/all_rat_one_chaser_updated.png, id=181, 282.55562pt x 216.55907pt>
 File: assets/all_rat_one_chaser_updated.png Graphic file (type png)
 <use assets/all_rat_one_chaser_updated.png>
 Package pdftex.def Info: assets/all_rat_one_chaser_updated.png  used on input l
 ine 139.
 (pdftex.def)             Requested size: 211.3883pt x 162.01575pt.
-<assets/all_rat_two_chasers_updated.png, id=169, 280.79906pt x 217.81375pt>
+<assets/all_rat_two_chasers_updated.png, id=182, 280.79906pt x 217.81375pt>
 File: assets/all_rat_two_chasers_updated.png Graphic file (type png)
 <use assets/all_rat_two_chasers_updated.png>
 Package pdftex.def Info: assets/all_rat_two_chasers_updated.png  used on input 
 line 140.
 (pdftex.def)             Requested size: 211.3883pt x 163.97144pt.
- [8 <./assets/chase_radius_.1_updated.png> <./assets/chase_radius_.2_updated.pn
-g> <./assets/chase_radius_.3_updated.png> <./assets/diff_chase_radii_dists_upda
-ted.png> <./assets/diff_chase_radii_winners_updated.png>] [9 <./assets/all_part
-y_1_chaser_no_updated.png> <./assets/all_ff_chasers_no_updated.png> <./assets/a
-ll_rat_one_chaser_updated.png> <./assets/all_rat_two_chasers_updated.png>]
-<assets/all_party_0_chasers_updated.png, id=195, 283.0575pt x 216.30812pt>
+ [9 <./assets/all_party_1_chaser_no_updated.png> <./assets/all_ff_chasers_no_up
+dated.png> <./assets/all_rat_one_chaser_updated.png> <./assets/all_rat_two_chas
+ers_updated.png>]
+<assets/all_party_0_chasers_updated.png, id=196, 283.0575pt x 216.30812pt>
 File: assets/all_party_0_chasers_updated.png Graphic file (type png)
 <use assets/all_party_0_chasers_updated.png>
 Package pdftex.def Info: assets/all_party_0_chasers_updated.png  used on input 
 line 176.
 (pdftex.def)             Requested size: 145.6229pt x 111.28604pt.
-<assets/all_party_1_chaser_rationality_decreases_updated.png, id=196, 282.30469
+<assets/all_party_1_chaser_rationality_decreases_updated.png, id=197, 282.30469
 pt x 214.04968pt>
 File: assets/all_party_1_chaser_rationality_decreases_updated.png Graphic file 
 (type png)
@@ -869,15 +870,15 @@ File: assets/all_party_1_chaser_rationality_decreases_updated.png Graphic file
 Package pdftex.def Info: assets/all_party_1_chaser_rationality_decreases_update
 d.png  used on input line 177.
 (pdftex.def)             Requested size: 145.6229pt x 110.41481pt.
-<assets/all_party_3_chasers_updated.png, id=197, 283.0575pt x 216.05719pt>
+<assets/all_party_3_chasers_updated.png, id=198, 283.0575pt x 216.05719pt>
 File: assets/all_party_3_chasers_updated.png Graphic file (type png)
 <use assets/all_party_3_chasers_updated.png>
 Package pdftex.def Info: assets/all_party_3_chasers_updated.png  used on input 
 line 178.
 (pdftex.def)             Requested size: 145.6229pt x 111.15694pt.
-) (discussion.tex) (future.tex [10 <./assets/all_party_0_chasers_updated.png> <
-./assets/all_party_1_chaser_rationality_decreases_updated.png> <./assets/all_pa
-rty_3_chasers_updated.png>]) (scs23paper.bbl
+) (discussion.tex [10 <./assets/all_party_0_chasers_updated.png> <./assets/all_
+party_1_chaser_rationality_decreases_updated.png> <./assets/all_party_3_chasers
+_updated.png>]) (future.tex) (scs23paper.bbl
 ** WARNING: IEEEtran.bst: No hyphenation pattern has been
 ** loaded for the language `English'. Using the pattern for
 ** the default language instead.
@@ -960,17 +961,23 @@ eprint:
 ** WARNING: IEEEtran.bst: No hyphenation pattern has been
 ** loaded for the language `en'. Using the pattern for
 ** the default language instead.
-) [12] (scs23paper.aux)
+** WARNING: IEEEtran.bst: No hyphenation pattern has been
+** loaded for the language `en'. Using the pattern for
+** the default language instead.
+** WARNING: IEEEtran.bst: No hyphenation pattern has been
+** loaded for the language `en'. Using the pattern for
+** the default language instead.
+[12]) [13] (scs23paper.aux)
  ***********
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-08-29>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 21547 strings out of 475247
- 410272 string characters out of 5757791
- 1939785 words of memory out of 5000000
- 42593 multiletter control sequences out of 15000+600000
+ 21550 strings out of 475247
+ 410328 string characters out of 5757791
+ 1942785 words of memory out of 5000000
+ 42594 multiletter control sequences out of 15000+600000
  591230 words of font info for 88 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  117i,12n,121p,649b,653s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -981,9 +988,9 @@ blic/amsfonts/cm/cmsy10.pfb><C:/Users/harmo/AppData/Local/Programs/MiKTeX/fonts
 /type1/urw/times/utmb8a.pfb><C:/Users/harmo/AppData/Local/Programs/MiKTeX/fonts
 /type1/urw/times/utmr8a.pfb><C:/Users/harmo/AppData/Local/Programs/MiKTeX/fonts
 /type1/urw/times/utmri8a.pfb>
-Output written on scs23paper.pdf (12 pages, 1229558 bytes).
+Output written on scs23paper.pdf (13 pages, 1230948 bytes).
 PDF statistics:
- 263 PDF objects out of 1000 (max. 8388607)
- 80 named destinations out of 1000 (max. 500000)
+ 270 PDF objects out of 1000 (max. 8388607)
+ 82 named destinations out of 1000 (max. 500000)
  98 words of extra memory for PDF output out of 10000 (max. 10000000)
 
